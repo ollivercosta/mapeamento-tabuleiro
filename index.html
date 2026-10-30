@@ -107,6 +107,12 @@ textarea{min-height:96px;resize:vertical}
 @media (max-width:560px){.stage-detail{grid-template-columns:1fr;padding-left:12px}}
 .addrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 
+.addnew{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.addnew input{flex:1 1 220px;min-width:0}
+.linkbtn{background:none;border:0;padding:4px 0;color:var(--accent);font-weight:600;cursor:pointer;font-size:14px}
+.linkbtn:hover{text-decoration:underline}
+.sub{margin-top:4px;padding:12px 14px;border-left:3px solid var(--casa);background:var(--surface);border-radius:0 6px 6px 0;display:grid;gap:8px}
+.sub .qt{font-size:15px}
 .actions{display:flex;justify-content:space-between;gap:12px;margin-top:28px;flex-wrap:wrap}
 .btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:6px;cursor:pointer;font-weight:600}
 .btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
@@ -174,6 +180,63 @@ const IMPORTAR=["Planilhas de controle","Lista de contatos","Histórico de proje
 const INTEGRA=["Google Agenda","Google Drive","WhatsApp","E-mail","Banco ou Pix","Emissor de nota fiscal","Instagram"];
 const MOMENTO=["No escritório ou em casa, no computador","Em reuniões externas","Durante eventos e produções","À noite ou fim de semana"];
 
+/* ======== Listas condicionais ======== */
+const ACT_STAGE={prospec:["contato"],proposta:["proposta"],contrato:["contrato","docs"],editais:["edital"],escrita:["escrita"],orcproj:["orcproj"],inscricao:["inscricao"],diligencia:["diligencia"],captacao:["captacao","contrapartida"],producao:["producao"],imprensa:["divulgacao"],design:["divulgacao"],prestacao:["prestacao"]};
+const STAGE_ACT={};Object.entries(ACT_STAGE).forEach(([a,st])=>st.forEach(x=>(STAGE_ACT[x]=STAGE_ACT[x]||[]).push(a)));
+const CURSO_ETAPAS=[["cur_plan","Planejamento e conteúdo da turma"],["cur_div","Divulgação"],["cur_insc","Inscrições"],["cur_pag","Confirmação e pagamento"],["cur_aula","Aulas"],["cur_pres","Lista de presença"],["cur_cert","Certificados"],["cur_aval","Avaliação final"]];
+const INGR_ETAPAS=[["ing_cad","Cadastro do evento"],["ing_lote","Lotes e preços"],["ing_venda","Vendas"],["ing_cort","Cortesias e contrapartidas"],["ing_check","Check-in na entrada"],["ing_fech","Fechamento e repasse"]];
+const PROJ_FRENTES=["artistas","empresas","ongs","publico","ensino","proprios"];
+const SERV_FRENTE={artistas:["Elaboração de projeto","Captação de recursos","Agenciamento artístico","Mentoria","Kit Artista","Assessoria de imprensa","Produção executiva","Prestação de contas"],empresas:["Elaboração de projeto","Captação de recursos","Consultoria (SWOT, ESG)","Assessoria de imprensa","Produção executiva","Prestação de contas"],ongs:["Elaboração de projeto","Captação de recursos","Consultoria (SWOT, ESG)","Produção executiva","Prestação de contas","Curso ou formação"],publico:["Elaboração de projeto","Captação de recursos","Consultoria (SWOT, ESG)","Produção executiva","Prestação de contas","Curso ou formação"],ensino:["Elaboração de projeto","Captação de recursos","Produção executiva","Prestação de contas","Curso ou formação"],proprios:["Elaboração de projeto","Captação de recursos","Produção executiva","Assessoria de imprensa","Prestação de contas"]};
+const SERV_ACT={"Elaboração de projeto":"escrita","Captação de recursos":"captacao","Mentoria":"mentoria","Assessoria de imprensa":"imprensa","Produção executiva":"producao","Prestação de contas":"prestacao","Curso ou formação":"cursos","Kit Artista":"design","Consultoria (SWOT, ESG)":"mentoria"};
+const DOCS_PF=["RG e CPF","Comprovante de endereço","Currículo ou portfólio","Release e fotos","Certidões negativas","Cartas de anuência","Orçamentos de fornecedores","Comprovantes de execução"];
+const DOCS_PJ=["CNPJ e contrato social ou estatuto","Ata de eleição e documento do representante","Certidões negativas","Comprovante de endereço","Portfólio institucional","Cartas de anuência","Orçamentos de fornecedores","Comprovantes de execução"];
+const LEIS=["Lei Rouanet (federal)","PNAB (Política Nacional Aldir Blanc)","Lei Paulo Gustavo","Leis estaduais (ICMS)","Leis municipais (ISS e IPTU)","Editais de empresas e fundações","Lei de Incentivo ao Esporte","Fundos de cultura"];
+const DECISAO_ACT={"Valor e condições da proposta":["proposta"],"Se vale inscrever em um edital":["editais","escrita"],"Texto final do projeto antes da inscrição":["escrita"],"Fechamento de contrato":["contrato","proposta"],"Gastos e pagamentos":["pagamentos","producao"],"Contrapartidas oferecidas a patrocinadores":["captacao"]};
+const PAINEL_ACT={"Recebimentos previstos":["cobranca"],"Cobranças em atraso":["cobranca"],"Captação em andamento por projeto":["captacao"],"Valor captado no ano":["captacao"],"Projetos aprovados no ano":["escrita","inscricao","editais"],"Prazos da semana":null};
+const DEPENDE_ACT={"Documentos do cliente":["contrato","inscricao","prestacao","escrita"],"Status de pagamento":["cobranca","pagamentos","prestacao"],"Aprovação de texto ou valor":["escrita","proposta","orcproj","design","imprensa"],"Prazos dos editais":["inscricao","editais","escrita","diligencia"],"Senhas e acessos de plataformas":["inscricao","diligencia","prestacao"],"Arquivos de projetos anteriores":["escrita","orcproj","design","prestacao","imprensa"]};
+const BUSCAR_ACT={"Prazo de um edital ou diligência":["editais","inscricao","diligencia","escrita"],"Documento de um cliente":["contrato","inscricao","prestacao","escrita"],"Versão final de um projeto":["escrita","orcproj","design","inscricao"],"Condições de um contrato":["contrato","cobranca","proposta"],"Se um pagamento foi feito":["cobranca","pagamentos"],"Senha ou login de plataforma":["inscricao","diligencia","prestacao"]};
+const ALERTA_ACT={"Prazo de edital chegando":["editais","inscricao","escrita"],"Diligência recebida":["diligencia"],"Prazo de diligência chegando":["diligencia"],"Documento pendente do cliente":["contrato","inscricao","prestacao"],"Pagamento vencido ou a receber":["cobranca","pagamentos"],"Prestação de contas chegando":["prestacao"]};
+const CONTROLE_ACT={prazos:["editais","inscricao","diligencia"],financeiro:["cobranca","pagamentos"],docs:["contrato","inscricao","prestacao","escrita"]};
+const DET=[
+ {a:"prospec",r:["direcao","equipe"],q:"Onde ficam registrados os contatos de quem procura a Tabuleiro?",o:["WhatsApp","Planilha","Instagram","E-mail","Não ficam registrados"],m:false},
+ {a:"proposta",r:["direcao","equipe"],q:"Como as propostas são montadas?",o:["Modelo no Word ou Google Docs","Canva","Planilha","Mensagem no WhatsApp"],m:true},
+ {a:"contrato",r:["direcao","equipe"],q:"Como os contratos são feitos e assinados?",o:["Modelo próprio no Word ou Docs","Assinatura digital (gov.br, DocuSign)","Impresso e assinado","Não usamos contrato"],m:true},
+ {a:"editais",r:["direcao","equipe"],q:"Como vocês encontram editais e oportunidades?",o:["Sites oficiais (ministério, secretarias)","Newsletters e grupos","Plataformas como o Prosas","Indicação de parceiros","Não há rotina para isso"],m:true},
+ {a:"escrita",r:["equipe"],q:"Onde o texto do projeto é escrito?",o:["Google Docs","Word","Direto na plataforma do edital"],m:true},
+ {a:"orcproj",r:["equipe"],q:"Onde a planilha orçamentária é feita?",o:["Planilha própria (Excel ou Sheets)","Modelo da plataforma do edital","Os dois"],m:false},
+ {a:"inscricao",r:["direcao","equipe"],q:"Em quais plataformas vocês fazem inscrições?",o:["Salic (Lei Rouanet)","Prosas","Mapas Culturais","Plataformas estaduais","Formulários de empresas e fundações","E-mail ou Correios"],m:true},
+ {a:"diligencia",r:["direcao","equipe"],q:"Como vocês ficam sabendo de uma diligência?",o:["E-mail da plataforma","Entrando na plataforma para conferir","Aviso do cliente"],m:true,q2:"Qual o prazo típico para responder?",o2:["Até 5 dias","6 a 10 dias","Mais de 10 dias","Varia muito"]},
+ {a:"captacao",r:["direcao"],q:"Como vocês registram as empresas abordadas na captação?",o:["Planilha","Sistema ou CRM","Só no WhatsApp e no e-mail","Não registramos"],m:false,q2:"Quantas empresas costumam abordar por projeto?",o2:["Até 10","11 a 30","Mais de 30"]},
+ {a:"producao",r:["equipe"],q:"O que você faz na produção?",o:["Cronograma","Fornecedores e orçamentos","Logística","Execução no dia do evento"],m:true},
+ {a:"imprensa",r:["equipe"],q:"O que entra na divulgação?",o:["Release","Redes sociais","Clipping","Relatório de mídia"],m:true},
+ {a:"design",r:["equipe"],q:"Que materiais você produz?",o:["Peças para redes sociais","Apresentações","Cartazes e flyers","Kit Artista","Aplicação de marcas de leis e patrocinadores"],m:true},
+ {a:"mentoria",r:["equipe"],q:"Como as mentorias são agendadas?",o:["WhatsApp","Agenda online","E-mail"],m:false},
+ {a:"prestacao",r:["direcao","equipe"],q:"O que mais dá trabalho na prestação de contas?",o:["Juntar comprovantes","Notas fiscais","Relatório de execução","Fotos e registros","Planilha financeira","Prazo apertado"],m:true},
+ {a:"cobranca",r:["direcao","equipe"],q:"Como vocês controlam o que cada cliente deve?",o:["Planilha","App do banco","Caderno","Na memória","Contador"],m:false},
+ {a:"pagamentos",r:["direcao"],q:"Como os parceiros e fornecedores são pagos?",o:["Pix","Transferência","Pela conta do projeto","Pelo contador"],m:true},
+ {a:"agenda",r:["equipe"],q:"De quem você controla a agenda?",o:["Da direção","A minha","Dos projetos e eventos","Dos parceiros"],m:true}
+];
+const PARC={
+ "Design":{faz:["Identidade visual do projeto","Peças para redes sociais","Cartazes, flyers e convites","Materiais impressos (catálogos, folders, banners)","Apresentação do projeto para patrocinadores","Kit Artista (release, portfólio, mídia kit)","Sinalização de evento","Aplicação de marcas de leis e patrocinadores"],
+   ins:["Briefing do projeto","Textos aprovados","Logos de patrocinadores e leis","Manual de aplicação de marcas da lei","Fotos e materiais do artista ou cliente","Datas do evento"],ativ:{"*":"design"}},
+ "Escrita de projetos":{faz:["Pesquisa e escolha de editais","Texto do projeto","Planilha orçamentária","Inscrição nas plataformas","Respostas a diligências","Relatório final"],
+   ins:["Dados e documentos do proponente","Portfólio e histórico do proponente","Edital escolhido","Orçamentos de fornecedores","Ideia ou briefing do projeto"],ativ:{"Pesquisa e escolha de editais":"editais","Texto do projeto":"escrita","Planilha orçamentária":"orcproj","Inscrição nas plataformas":"inscricao","Respostas a diligências":"diligencia","Relatório final":"prestacao"}},
+ "Produção executiva":{faz:["Cronograma de produção","Contratação de artistas e equipe","Fornecedores e orçamentos","Logística (transporte, hospedagem, espaço)","Pagamentos do projeto","Comprovantes para a prestação de contas","Execução no dia do evento"],
+   ins:["Projeto aprovado e orçamento","Cronograma","Contatos de fornecedores","Verba liberada","Regras da lei para comprovação"],ativ:{"*":"producao","Pagamentos do projeto":"pagamentos","Comprovantes para a prestação de contas":"prestacao"}},
+ "Captação de recursos":{faz:["Prospecção de empresas","Apresentação do projeto","Negociação de cotas e contrapartidas","Contrato de patrocínio","Acompanhamento do aporte","Relatório para o patrocinador"],
+   ins:["Projeto aprovado","Apresentação comercial","Plano de cotas e contrapartidas","Lista de empresas-alvo","Certificado de aprovação da lei"],ativ:{"*":"captacao"}},
+ "Assessoria de imprensa":{faz:["Release","Mailing e envio para a imprensa","Agendamento de entrevistas","Clipping","Relatório de mídia","Gestão de redes sociais"],
+   ins:["Informações do projeto","Fotos e vídeos","Agenda do evento","Porta-vozes e contatos"],ativ:{"*":"imprensa"}},
+ "Contabilidade":{faz:["Notas fiscais","Conta bancária vinculada do projeto","Pagamentos e recolhimento de impostos","Prestação de contas financeira","Contratos de prestação de serviço"],
+   ins:["Comprovantes de despesas","Extratos da conta do projeto","Contratos assinados","Orçamento aprovado"],ativ:{"*":"prestacao","Pagamentos e recolhimento de impostos":"pagamentos","Notas fiscais":"cobranca","Contratos de prestação de serviço":"contrato"}},
+ "Audiovisual":{faz:["Captação de vídeo e foto","Edição","Registro para comprovação na prestação de contas","Vídeo de apresentação do projeto","Transmissão ao vivo"],
+   ins:["Roteiro ou briefing","Agenda de gravação","Logos e vinhetas","Autorizações de uso de imagem"],ativ:{"*":"producao","Vídeo de apresentação do projeto":"imprensa","Registro para comprovação na prestação de contas":"prestacao"}}
+};
+const PARC_INS_GEN=["Briefing do projeto","Arquivos e materiais do cliente","Prazos e datas","Aprovação da direção para começar"];
+const BUSCAR_P=["Briefing do projeto","Prazo de entrega","Arquivos, logos e materiais","Contato do cliente","Status da aprovação do que entreguei","Status do meu pagamento"];
+const ALERTAS_P=["Nova demanda para mim","Prazo de entrega chegando","Retorno ou pedido de ajuste","Entrega aprovada","Pagamento liberado"];
+const PARC_ACC=[["projetos","Projetos e tarefas em que atuo"],["prazos","Prazos das minhas entregas"],["docs","Arquivos e materiais dos projetos"],["clientes","Contatos dos clientes"],["repasses","Meus pagamentos e repasses"]];
+
 /* ======== Estado ======== */
 const $=s=>document.querySelector(s);
 const el=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){const v=a[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?"":v);}c.flat().forEach(x=>x!=null&&x!==false&&e.append(x));return e;};
@@ -184,56 +247,100 @@ let finished=null;
 function save(){store.set("tab-map-draft",A);store.set("tab-map-step",cur);}
 function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600);}
 const lab=(list,k)=>(list.find(x=>x[0]===k)||[k,k])[1];
-const role=()=>A.papel;
-const fr=k=>{A.fluxo=A.fluxo||{};A.fluxo[k]=A.fluxo[k]||{};return A.fluxo[k];};
 
 /* ======== Componentes ======== */
 let uid=0;const nid=p=>p+"_"+(++uid);
+const extras=k=>((A._extra||{})[k]||[]);
+function addExtra(k,v){A._extra=A._extra||{};const l=A._extra[k]||[];if(!l.includes(v))A._extra[k]=l.concat(v);save();}
+function hkey(opts){let h=0;const s=opts.join("|");for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))|0;return "h"+(h>>>0).toString(36);}
+function AddNew(label,onAdd){const box=el("div",{class:"addnew"});
+  const open=()=>{box.replaceChildren();const id=nid("an");const inp=el("input",{type:"text",id,placeholder:"Digite e confirme","aria-label":label});
+    const ok=el("button",{type:"button",class:"btn small",text:"Adicionar"});const cancel=el("button",{type:"button",class:"btn ghost small",text:"Cancelar"});
+    const go=()=>{const v=inp.value.trim();if(!v){inp.focus();return;}onAdd(v);};
+    ok.addEventListener("click",go);inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();go();}if(e.key==="Escape")closed();});cancel.addEventListener("click",closed);
+    box.append(inp,ok,cancel);inp.focus();};
+  const closed=()=>{box.replaceChildren(el("button",{type:"button",class:"linkbtn",text:"+ "+label,onclick:open}));};
+  closed();return box;}
 function Q(title,hint,...body){return el("div",{class:"q"},el("p",{class:"qt",text:title}),hint?el("p",{class:"hint",text:hint}):null,...body);}
-function Choices(opts,get,set,{multi=true,two=true,descs=null}={}){
-  const name=nid("c");const box=el("div",{class:"choices"+(two?" two":"")});
-  opts.forEach((o,i)=>{const id=name+"_"+i;const inp=el("input",{type:multi?"checkbox":"radio",name,id});
-    const v=get();inp.checked=multi?(v||[]).includes(o):v===o;
-    inp.addEventListener("change",()=>{if(multi){const s=new Set(get()||[]);inp.checked?s.add(o):s.delete(o);set(opts.filter(x=>s.has(x)));}else set(o);save();});
-    box.append(el("label",{class:"choice",for:id},inp,el("span",{},o,descs&&descs[i]?el("small",{text:descs[i]}):null)));});
-  return box;}
+function Sub(title,...body){return el("div",{class:"sub"},el("p",{class:"qt",text:title}),...body);}
+function Choices(opts,get,set,{multi=true,two=true,descs=null,key=null,add=true,onChange=null}={}){
+  const k=key||hkey(opts);const wrap=el("div");
+  const draw=()=>{wrap.replaceChildren();const all=opts.concat(extras(k).filter(x=>!opts.includes(x)));
+    const name=nid("c");const box=el("div",{class:"choices"+(two?" two":"")});
+    all.forEach((o,i)=>{const id=name+"_"+i;const inp=el("input",{type:multi?"checkbox":"radio",name,id});
+      const v=get();inp.checked=multi?(v||[]).includes(o):v===o;
+      inp.addEventListener("change",()=>{if(multi){const st=new Set(get()||[]);inp.checked?st.add(o):st.delete(o);set(all.filter(x=>st.has(x)));}else set(o);save();onChange&&onChange();});
+      box.append(el("label",{class:"choice",for:id},inp,el("span",{},o,descs&&descs[i]?el("small",{text:descs[i]}):null)));});
+    wrap.append(box);
+    if(add)wrap.append(AddNew("Adicionar outra opção",v=>{addExtra(k,v);if(multi){const cur=get()||[];if(!cur.includes(v))set(cur.concat(v));}else set(v);save();draw();onChange&&onChange();}));};
+  draw();return wrap;}
 function Text(get,set,{area=false,ph=""}={}){const id=nid("t");const e=area?el("textarea",{id,placeholder:ph}):el("input",{type:"text",id,placeholder:ph});e.value=get()||"";e.addEventListener("input",()=>{set(e.value);save();});return e;}
-function Sel(opts,get,set,{blank="Selecione",id=null}={}){const s=el("select",{id:id||nid("s")},el("option",{value:"",text:blank}),opts.map(o=>el("option",{value:o,text:o})));s.value=get()||"";s.addEventListener("change",()=>{set(s.value);save();});return s;}
-function Matrix(rows,cols,opts,getRow,setCell,{head=true}={}){
-  const m=el("div",{class:"matrix",style:`--cols:${cols.length}`});
-  if(head)m.append(el("div",{class:"mrow mhead"},el("span",{text:""}),cols.map(c=>el("span",{text:c[1]}))));
-  rows.forEach(r=>{const row=el("div",{class:"mrow"},el("span",{class:"lbl",text:r[1]}));
-    cols.forEach(c=>{const id=nid("m");row.append(el("div",{class:"cell"},el("label",{for:id,text:c[1]}),Sel(opts,()=>(getRow(r[0])||{})[c[0]],v=>setCell(r[0],c[0],v),{blank:"·",id})));});
-    m.append(row);});
-  return m;}
+function Sel(opts,get,set,{blank="Selecione",id=null,key=null,add=true}={}){
+  const k=key||hkey(opts);const sid=id||nid("s");const holder=el("span",{style:"display:contents"});
+  const draw=()=>{const all=opts.concat(extras(k).filter(x=>!opts.includes(x)));
+    const s=el("select",{id:sid},el("option",{value:"",text:blank}),...all.map(o=>el("option",{value:o,text:o})),add?el("option",{value:"__add__",text:"+ Outro..."}):null);
+    s.value=get()||"";
+    s.addEventListener("change",()=>{if(s.value==="__add__"){const inp=el("input",{type:"text",placeholder:"Digite e tecle Enter","aria-label":"Outra opção"});
+        const done=v=>{if(v){addExtra(k,v);set(v);save();}draw();};
+        inp.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();done(inp.value.trim());}if(e.key==="Escape")done("");});
+        inp.addEventListener("blur",()=>done(inp.value.trim()));holder.replaceChildren(inp);inp.focus();return;}
+      set(s.value);save();});
+    holder.replaceChildren(s);};
+  draw();return holder;}
+function Matrix(rows,cols,opts,getRow,setCell,{head=true,key=null,addLabel="Adicionar item"}={}){
+  const wrap=el("div",{style:"display:grid;gap:6px"});
+  const draw=()=>{wrap.replaceChildren();const all=rows.concat(key?extras(key).map(x=>["x:"+x,x]):[]);
+    const m=el("div",{class:"matrix",style:`--cols:${cols.length}`});
+    if(head)m.append(el("div",{class:"mrow mhead"},el("span",{text:""}),cols.map(c=>el("span",{text:c[1]}))));
+    all.forEach(r=>{const row=el("div",{class:"mrow"},el("span",{class:"lbl",text:r[1]}));
+      cols.forEach(c=>{const id=nid("m");row.append(el("div",{class:"cell"},el("label",{for:id,text:c[1]}),Sel(opts,()=>(getRow(r[0])||{})[c[0]],v=>setCell(r[0],c[0],v),{blank:"·",id,add:false})));});
+      m.append(row);});
+    wrap.append(m);if(key)wrap.append(AddNew(addLabel,v=>{addExtra(key,v);draw();}));};
+  draw();return wrap;}
+
+/* ======== Lógica de relevância ======== */
+const role=()=>A.papel;
+const fr=k=>{A.fluxo=A.fluxo||{};A.fluxo[k]=A.fluxo[k]||{};return A.fluxo[k];};
+function partnerActs(){const s=new Set();(A.parcTipo||[]).forEach(sp=>{const P=PARC[sp];if(!P)return;const faz=((A.esp||{})[sp]||{}).faz||[];
+  faz.forEach(f=>{const a=P.ativ[f]||P.ativ["*"];if(a)s.add(a);});if(!faz.length&&P.ativ["*"])s.add(P.ativ["*"]);});return s;}
+function act(k){const r=role();if(r==="direcao"){const v=(A.ativ||{})[k];return v!=="Não fazemos";}
+  if(r==="equipe"){const v=(A.minhas||{})[k];return !!v&&v!=="Não faço";}
+  return partnerActs().has(k);}
+const anyAct=list=>!list||list.some(act);
+const dirTeam=()=>Object.values(A.ativ||{}).some(v=>v==="Equipe"||v==="Dividido");
+const dirPartner=()=>Object.values(A.ativ||{}).includes("Parceiro");
+const filt=(opts,map)=>opts.filter(o=>anyAct(map[o]));
+const stageList=fk=>fk==="cursos"?CURSO_ETAPAS:fk==="ingressos"?INGR_ETAPAS:ETAPAS;
+function stageRelevant(k){if(k.startsWith("cur_")||k.startsWith("ing_")||k.startsWith("x:"))return true;const acts=STAGE_ACT[k];if(!acts)return role()==="direcao";return acts.some(act);}
+function defaultQuem(k){if(role()!=="direcao")return role()==="equipe"?"Equipe":"";if(k==="aprovacao")return "Órgão / edital";const acts=STAGE_ACT[k]||[];const v=acts.map(a=>(A.ativ||{})[a]).find(Boolean);
+  return {"Eu":"Direção","Equipe":"Equipe","Parceiro":"Parceiro","Dividido":"Direção e equipe"}[v]||"";}
 
 /* Construtor de etapas por frente */
-function StageBuilder(fk,{full,onChange=()=>{}}){
-  const F=fr(fk);F.etapas=F.etapas||[];
+function StageBuilder(fk,{onChange=()=>{}}){
+  const F=fr(fk);F.etapas=F.etapas||[];const eq=role()!=="direcao";
   const wrap=el("div",{class:"stages"});
-  const all=()=>ETAPAS.concat((F.extras||[]).map(x=>["x:"+x,x]));
+  const all=()=>stageList(fk).filter(([k])=>stageRelevant(k)||F.etapas.some(e=>e.e===k)).concat((F.extras||[]).map(x=>["x:"+x,x]));
   function draw(){wrap.replaceChildren();
     all().forEach(([k,l])=>{const st=F.etapas.find(e=>e.e===k);const id=nid("st");
       const cb=el("input",{type:"checkbox",id});cb.checked=!!st;
-      cb.addEventListener("change",()=>{if(cb.checked)F.etapas.push({e:k});else F.etapas=F.etapas.filter(e=>e.e!==k);
-        F.etapas.sort((a,b)=>all().findIndex(x=>x[0]===a.e)-all().findIndex(x=>x[0]===b.e));save();draw();onChange();});
+      cb.addEventListener("change",()=>{if(cb.checked){const n={e:k};const q=defaultQuem(k);if(q)n.quem=q;F.etapas.push(n);}else F.etapas=F.etapas.filter(e=>e.e!==k);
+        const order=all().map(x=>x[0]);F.etapas.sort((a,b)=>order.indexOf(a.e)-order.indexOf(b.e));save();draw();onChange();});
       const box=el("div",{class:"stage"},el("label",{class:"choice",for:id},cb,el("span",{text:l})));
-      if(st){const det=el("div",{class:"stage-detail"});
-        const f=(t,opts,key)=>{const sid=nid("sd");return el("label",{for:sid},t,Sel(opts,()=>st[key],v=>{st[key]=v;},{id:sid,blank:"Selecione"}));};
-        det.append(f(full?"Quem faz":"Quem faz",QUEM,"quem"),f("Onde acontece",ONDE,"onde"),f("Quanto tempo leva",DUR,"dur"));
+      if(st){const det=el("div",{class:"stage-detail",style:eq?"grid-template-columns:repeat(4,minmax(0,1fr))":""});
+        const f=(t,opts,key)=>{const sid=nid("sd");return el("label",{for:sid},t,Sel(opts,()=>st[key],v=>{st[key]=v;},{id:sid,blank:"Selecione",key:"stage_"+key}));};
+        det.append(f("Quem faz",QUEM,"quem"));if(eq)det.append(f("Recebe de",["Direção","Cliente","Parceiro","Ninguém, eu começo"],"recebe"));
+        det.append(f("Onde acontece",ONDE,"onde"),f("Quanto tempo leva",DUR,"dur"));
         box.append(det);}
       wrap.append(box);});
   }
   draw();
-  const inp=el("input",{type:"text",id:nid("ex"),placeholder:"Outra etapa que não está na lista"});
-  const add=el("button",{type:"button",class:"btn ghost small",text:"Adicionar etapa",onclick:()=>{const v=inp.value.trim();if(!v)return;F.extras=(F.extras||[]).concat(v);F.etapas.push({e:"x:"+v});inp.value="";save();draw();onChange();}});
-  return el("div",{style:"display:grid;gap:10px"},wrap,el("div",{class:"addrow"},inp,add));
+  return el("div",{style:"display:grid;gap:10px"},wrap,AddNew("Adicionar etapa",v=>{F.extras=(F.extras||[]).concat(v);const n={e:"x:"+v};if(eq)n.quem="Equipe";F.etapas.push(n);save();draw();onChange();}));
 }
 
 /* ======== Etapas do formulário ======== */
 const ROLES=[["direcao","Direção","Dona ou sócia. Vê o negócio inteiro e toma as decisões.","20 a 30 min"],["equipe","Equipe interna","Funcionária ou colaboradora fixa da Tabuleiro.","10 a 15 min"],["parceiro","Parceiro externo","Profissional que atua em projetos específicos.","8 a 10 min"]];
 
-function stepIdent(){return {t:"Quem está respondendo",i:"Cada pessoa responde separadamente. As próximas perguntas mudam conforme a função escolhida.",
+function stepIdent(){return {t:"Quem está respondendo",i:"Cada pessoa responde separadamente. As próximas perguntas se ajustam à sua função e às suas respostas.",
   render:()=>{const roles=el("div",{class:"roles",role:"radiogroup","aria-label":"Função"});
     ROLES.forEach(([k,t,d,time])=>{const id="role_"+k;const inp=el("input",{type:"radio",name:"papel",id});inp.checked=A.papel===k;
       inp.addEventListener("change",()=>{A.papel=k;save();render();});
@@ -241,110 +348,184 @@ function stepIdent(){return {t:"Quem está respondendo",i:"Cada pessoa responde 
     return [Q("Seu nome",null,Text(()=>A.nome,v=>A.nome=v,{ph:"Nome e sobrenome"})),Q("Sua função na Tabuleiro",null,roles)];},
   valid:()=>!A.nome?"Informe seu nome.":!A.papel?"Escolha sua função.":""};}
 
-function stepPapelDirecao(){return {t:"Seu papel e o da equipe",i:"Para cada atividade, diga quem faz hoje. Isso mostra onde o trabalho depende de você e o que pode ser distribuído pelo sistema.",
+/* ---- Direção ---- */
+function stepPapelDirecao(){return {t:"Quem faz o quê",i:"Para cada atividade, diga quem faz hoje. As próximas perguntas usam essa resposta: o que vocês não fazem sai do formulário.",
   render:()=>[
-    Q("Quem faz cada atividade hoje?","\"Dividido\" = você e a equipe fazem juntas. Deixe em branco o que não souber.",
-      Matrix(ATIV,[["quem","Quem faz"]],QUEM_ATIV,k=>({quem:(A.ativ||{})[k]}),(k,c,v)=>{A.ativ=A.ativ||{};A.ativ[k]=v;},{head:false})),
-    Q("Quais decisões passam obrigatoriamente por você?","Viram etapas de aprovação dentro do sistema.",Choices(DECISOES,()=>A.decisoes,v=>A.decisoes=v)),
-    Q("O que você precisa enxergar para tocar a empresa?","Cada item marcado vira um bloco do painel gerencial.",Choices(PAINEL_VER,()=>A.painelVer,v=>A.painelVer=v)),
-    Q("Como você imagina a equipe daqui a 1 ano?",null,Choices(["Igual à de hoje","Mais 1 ou 2 pessoas fixas","Mais parceiros por projeto","Ainda não sei"],()=>A.crescimento,v=>A.crescimento=v,{multi:false}))
+    Q("Quem faz cada atividade hoje?","\"Dividido\" = você e a equipe fazem juntas. Marque \"Não fazemos\" para o que não existe na Tabuleiro.",
+      Matrix(ATIV,[["quem","Quem faz"]],QUEM_ATIV,k=>({quem:(A.ativ||{})[k]}),(k,c,v)=>{A.ativ=A.ativ||{};A.ativ[k]=v;},{head:false,key:"ativ",addLabel:"Adicionar atividade"})),
+    Q("Como você imagina a equipe daqui a 1 ano?",null,Choices(["Igual à de hoje","Mais 1 ou 2 pessoas fixas","Mais parceiros por projeto","Ainda não sei"],()=>A.crescimento,v=>A.crescimento=v,{multi:false,key:"crescimento"}))
   ]};}
-function stepPapelEquipe(){return {t:"O seu trabalho",i:"Marque com que frequência você faz cada atividade. É assim que o sistema vai montar a sua lista de tarefas.",
+function stepGestaoDirecao(){return {t:"Gestão e decisões",i:"Perguntas montadas a partir de quem faz cada atividade.",
+  render:()=>{const out=[
+    Q("Quais decisões passam obrigatoriamente por você?","Viram etapas de aprovação dentro do sistema.",Choices(filt(DECISOES,DECISAO_ACT).filter(d=>d!=="Contratação de parceiros"||dirPartner()),()=>A.decisoes,v=>A.decisoes=v,{key:"decisoes"})),
+    Q("O que você precisa enxergar para tocar a empresa?","Cada item marcado vira um bloco do painel gerencial.",Choices(filt(PAINEL_VER,PAINEL_ACT).filter(x=>!["Quem está com cada tarefa","Carga de trabalho da equipe"].includes(x)||dirTeam()||dirPartner()),()=>A.painelVer,v=>A.painelVer=v,{key:"painelVer"}))];
+    if(dirTeam())out.push(Q("Como você acompanha o que a equipe está fazendo?","Aparece porque você marcou atividades feitas pela equipe.",Choices(["Pergunto pelo WhatsApp","Conversa no dia a dia","Planilha compartilhada","Ela me avisa quando termina","Não consigo acompanhar bem"],()=>A.acompanha,v=>A.acompanha=v,{key:"acompanha"})));
+    if(dirPartner()){out.push(Q("Parceiros externos","Aparece porque você marcou atividades feitas por parceiros.",
+      Sub("Quais especialidades de parceiros vocês usam?",Choices(PARC_TIPO,()=>A.dirParcTipo,v=>A.dirParcTipo=v,{key:"parcTipo"})),
+      Sub("Como você passa a demanda para o parceiro?",Choices(["WhatsApp","E-mail","Reunião","Documento de briefing"],()=>A.dirParcDemanda,v=>A.dirParcDemanda=v,{key:"dirParcDemanda"})),
+      Sub("Quem aprova o que o parceiro entrega?",Choices(["Eu","A equipe","O cliente","Depende do projeto"],()=>A.dirParcAprova,v=>A.dirParcAprova=v,{key:"dirParcAprova"})),
+      Sub("Como os parceiros são pagos?",Choices(PARC_REMUN,()=>A.dirParcPaga,v=>A.dirParcPaga=v,{key:"parcRemun"})),
+      Sub("Os parceiros devem usar o sistema?",Choices(["Sim, para ver e entregar as próprias tarefas","Não, a equipe repassa as informações","Ainda não sei"],()=>A.dirParcUsa,v=>A.dirParcUsa=v,{multi:false,two:false,key:"dirParcUsa"}))));}
+    return out;}};}
+
+/* ---- Detalhes por atividade (direção e equipe) ---- */
+function detItems(){const r=role();return DET.filter(d=>d.r.includes(r)&&act(d.a)&&(r!=="direcao"||(A.ativ||{})[d.a]));}
+function stepDetalhes(){const r=role();return {t:r==="direcao"?"Como cada atividade funciona":"Como as suas atividades funcionam",
+  i:"Só aparecem as atividades que "+(r==="direcao"?"a Tabuleiro faz":"você faz")+". Essas respostas definem campos, integrações e avisos do sistema.",
+  render:()=>detItems().map(d=>{A.det=A.det||{};const D=()=>A.det[d.a]=A.det[d.a]||{};
+    return Q(d.q,lab(ATIV,d.a),Choices(d.o,()=>D().v,v=>D().v=v,{multi:d.m,key:"det_"+d.a}),
+      d.q2?Sub(d.q2,Choices(d.o2,()=>D().v2,v=>D().v2=v,{multi:false,key:"det2_"+d.a})):null);})};}
+
+/* ---- Equipe ---- */
+function stepPapelEquipe(){return {t:"O seu trabalho",i:"Marque com que frequência você faz cada atividade. As próximas perguntas mostram só o que é seu.",
   render:()=>[
     Q("Com que frequência você faz cada atividade?","Deixe \"Não faço\" para o que não é com você.",
-      Matrix(ATIV,[["f","Frequência"]],FREQ,k=>({f:(A.minhas||{})[k]}),(k,c,v)=>{A.minhas=A.minhas||{};A.minhas[k]=v;},{head:false})),
-    Q("Como as tarefas chegam até você?",null,Choices(RECEBE,()=>A.recebe,v=>A.recebe=v)),
-    Q("Como você avisa que algo foi feito?",null,Choices(REPORTA,()=>A.reporta,v=>A.reporta=v)),
-    Q("O que você precisa pedir para a direção antes de conseguir trabalhar?","Cada item marcado é uma informação que o sistema deve deixar acessível para você.",Choices(DEPENDE,()=>A.depende,v=>A.depende=v)),
-    Q("Que tarefa repetitiva você gostaria que o sistema fizesse por você?",null,Text(()=>A.repetitiva,v=>A.repetitiva=v,{area:true,ph:"Ex.: montar a pasta de documentos de cada inscrição"}))
-  ]};}
-function stepPapelParceiro(){return {t:"Sua atuação com a Tabuleiro",i:"Ajuda a definir o que um parceiro enxerga e faz dentro do sistema.",
+      Matrix(ATIV,[["f","Frequência"]],FREQ,k=>({f:(A.minhas||{})[k]}),(k,c,v)=>{A.minhas=A.minhas||{};A.minhas[k]=v;},{head:false,key:"minhas",addLabel:"Adicionar atividade"})),
+    Q("Como as tarefas chegam até você?",null,Choices(RECEBE,()=>A.recebe,v=>A.recebe=v,{key:"recebe"})),
+    Q("Como você avisa que algo foi feito?",null,Choices(REPORTA,()=>A.reporta,v=>A.reporta=v,{key:"reporta"}))
+  ],valid:()=>Object.values(A.minhas||{}).some(v=>v&&v!=="Não faço")?"":"Marque a frequência de pelo menos uma atividade que você faz."};}
+function stepDependeEquipe(){return {t:"O que você precisa para trabalhar",i:"Montado a partir das atividades que você faz.",
   render:()=>[
-    Q("Em que você atua?",null,Choices(PARC_TIPO,()=>A.parcTipo,v=>A.parcTipo=v)),
-    Q("Com que frequência você faz cada atividade?",null,Matrix(ATIV,[["f","Frequência"]],FREQ,k=>({f:(A.minhas||{})[k]}),(k,c,v)=>{A.minhas=A.minhas||{};A.minhas[k]=v;},{head:false})),
-    Q("Como as demandas chegam até você?",null,Choices(RECEBE.slice(0,4),()=>A.recebe,v=>A.recebe=v)),
-    Q("Como é o seu modelo de remuneração?","Só o formato, sem valores.",Choices(PARC_REMUN,()=>A.parcRemun,v=>A.parcRemun=v,{multi:false})),
-    Q("O que você entrega ao final do seu trabalho?",null,Text(()=>A.entrega,v=>A.entrega=v,{area:true,ph:"Ex.: projeto escrito em PDF, planilha orçamentária"}))
-  ]};}
+    Q("O que você precisa pedir para a direção antes de conseguir trabalhar?","Cada item marcado é uma informação que o sistema deve deixar acessível para você.",Choices(filt(DEPENDE,DEPENDE_ACT),()=>A.depende,v=>A.depende=v,{key:"depende"})),
+    Q("Que tarefa repetitiva você gostaria que o sistema fizesse por você?",null,Text(()=>A.repetitiva,v=>A.repetitiva=v,{area:true,ph:"Ex.: montar a pasta de documentos de cada inscrição"}))]};}
 
-function stepFrentes(){const dir=role()==="direcao";return {t:dir?"Frentes de trabalho":"Frentes em que você atua",
-  i:dir?"Marque os tipos de cliente e de projeto que a Tabuleiro atende hoje. Na sequência, cada frente marcada terá uma página própria para descrever o fluxo.":"Marque as frentes em que você trabalha. Cada uma terá uma página curta sobre as etapas em que você participa.",
-  render:()=>[Q(dir?"Quais frentes existem hoje?":"Em quais frentes você atua?",null,Choices(FRENTES.map(f=>f[1]),()=>(A.frentes||[]).map(k=>lab(FRENTES,k)),v=>{A.frentes=FRENTES.filter(f=>v.includes(f[1])).map(f=>f[0]);},{descs:FRENTES.map(f=>f[2])}))],
+/* ---- Parceiro ---- */
+function stepParcAtuacao(){return {t:"Sua especialidade",i:"Escolha em que você atua. Todas as próximas perguntas partem daqui.",
+  render:()=>[Q("Em que você atua com a Tabuleiro?",null,Choices(PARC_TIPO,()=>A.parcTipo,v=>A.parcTipo=v,{key:"parcTipo"}))],
+  valid:()=>(A.parcTipo||[]).length?"":"Escolha pelo menos uma especialidade."};}
+function stepParcEsp(sp){const P=PARC[sp];A.esp=A.esp||{};const E=()=>A.esp[sp]=A.esp[sp]||{};
+  return {t:sp,i:"O que você faz em "+sp.toLowerCase()+" e o que precisa para fazer.",
+  render:()=>{const out=[];
+    const followWrap=el("div",{style:"display:grid;gap:8px"});
+    const follow=()=>{followWrap.replaceChildren();const faz=E().faz||[];
+      if(sp==="Design"&&faz.includes("Aplicação de marcas de leis e patrocinadores"))followWrap.append(Sub("Onde você encontra os manuais e logos das leis e patrocinadores?",Choices(["Recebo da Tabuleiro a cada projeto","Tenho uma pasta própria","Baixo nos sites oficiais","Peço ao cliente"],()=>E().marcas,v=>E().marcas=v,{key:"marcas"})));
+      if((sp==="Produção executiva"&&faz.includes("Comprovantes para a prestação de contas"))||(sp==="Contabilidade"&&faz.includes("Prestação de contas financeira")))followWrap.append(Sub("Como os comprovantes chegam à prestação de contas?",Choices(["Envio para a Tabuleiro por e-mail","Pasta compartilhada","Entrego tudo no final","Eu mesmo junto na prestação"],()=>E().comprov,v=>E().comprov=v,{key:"comprov"})));
+      if(sp==="Escrita de projetos"&&faz.includes("Inscrição nas plataformas"))followWrap.append(Sub("Em quais plataformas você inscreve?",Choices(DET.find(d=>d.a==="inscricao").o,()=>E().plat,v=>E().plat=v,{key:"det_inscricao"})));
+      if(sp==="Escrita de projetos"&&faz.includes("Respostas a diligências"))followWrap.append(Sub("Como você fica sabendo de uma diligência?",Choices(DET.find(d=>d.a==="diligencia").o,()=>E().dilig,v=>E().dilig=v,{key:"det_diligencia"})));
+      if(sp==="Captação de recursos")followWrap.append(Sub("Como você registra as empresas abordadas?",Choices(DET.find(d=>d.a==="captacao").o,()=>E().regCapta,v=>E().regCapta=v,{multi:false,key:"det_captacao"})));
+      if(sp==="Assessoria de imprensa"&&faz.includes("Clipping"))followWrap.append(Sub("Onde o clipping é entregue?",Choices(["Relatório em PDF","Pasta compartilhada","Planilha","E-mail"],()=>E().clip,v=>E().clip=v,{key:"clip"})));
+    };
+    out.push(Q("O que você faz em "+sp.toLowerCase()+" para a Tabuleiro?",null,Choices(P?P.faz:[],()=>E().faz,v=>E().faz=v,{key:"faz_"+sp,onChange:follow})));
+    out.push(followWrap);follow();
+    out.push(Q("O que você precisa receber para começar?","Viram os campos obrigatórios da demanda que chega para você.",Choices(P?P.ins:PARC_INS_GEN,()=>E().ins,v=>E().ins=v,{key:"ins_"+sp})));
+    out.push(Q("Quanto tempo leva uma entrega típica?",null,Choices(["Horas","Alguns dias","1 a 2 semanas","Mais de 2 semanas"],()=>E().prazo,v=>E().prazo=v,{multi:false,key:"parcPrazo"})));
+    return out;}};}
+function stepParcCiclo(){A.ciclo=A.ciclo||{};const C=A.ciclo;const ext=()=>(C.aprova||[]).some(x=>x==="Patrocinador"||x==="Órgão do edital");
+  return {t:"Do pedido à entrega",i:"Como o seu trabalho entra e sai da Tabuleiro. É aqui que tarefas se perdem, e é isso que o sistema precisa organizar.",
+  render:()=>{const extWrap=el("div");const drawExt=()=>{extWrap.replaceChildren();if(ext())extWrap.append(Sub("Aprovações externas costumam levar quanto tempo?",Choices(["Até 2 dias","Até 1 semana","Mais de 1 semana"],()=>C.extTempo,v=>C.extTempo=v,{multi:false,key:"extTempo"})));};
+    const out=[
+    Q("De quem você recebe a demanda?",null,Choices(["Direção","Equipe interna","Direto do cliente","Outro parceiro"],()=>C.recebeDe,v=>C.recebeDe=v,{key:"recebeDe"})),
+    Q("Por onde a demanda chega?",null,Choices(["WhatsApp","E-mail","Reunião","Documento de briefing"],()=>C.canal,v=>C.canal=v,{key:"canalDemanda"})),
+    Q("Quem aprova o que você entrega?",null,Choices(["Direção","Equipe interna","Cliente","Patrocinador","Órgão do edital"],()=>C.aprova,v=>C.aprova=v,{key:"aprova",onChange:drawExt})),extWrap,
+    Q("Quantas rodadas de ajuste costumam acontecer?",null,Choices(["Nenhuma","1","2","3 ou mais","Sem limite definido"],()=>C.rodadas,v=>C.rodadas=v,{multi:false,key:"rodadas"})),
+    Q("Onde você entrega o trabalho final?",null,Choices(["Google Drive","WeTransfer","E-mail","WhatsApp","Plataforma do edital"],()=>C.entregaOnde,v=>C.entregaOnde=v,{key:"entregaOnde"})),
+    Q("Como é o seu modelo de remuneração?","Só o formato, sem valores.",Choices(PARC_REMUN,()=>A.parcRemun,v=>A.parcRemun=v,{multi:false,key:"parcRemun1"})),
+    Q("Quando você recebe?",null,Choices(["Na entrega aprovada","Por etapa concluída","Depois da aprovação ou captação do projeto","Mensalmente"],()=>C.pagQuando,v=>C.pagQuando=v,{multi:false,key:"pagQuando"}))];
+    drawExt();return out;}};}
+function stepParcInfo(){return {t:"Informações e avisos",i:"O que você precisa encontrar rápido e o que o sistema deve te avisar.",
+  render:()=>[
+    Q("O que você mais procura quando trabalha num projeto da Tabuleiro?",null,Choices(BUSCAR_P,()=>A.buscar,v=>A.buscar=v,{key:"buscarP"})),
+    Q("Sobre o que o sistema deve avisar você?",null,Choices(ALERTAS_P,()=>A.alertas,v=>A.alertas=v,{key:"alertasP"})),
+    Q("Onde você prefere receber os avisos?",null,Choices(CANAL,()=>A.canal,v=>A.canal=v,{two:false,key:"canal"}))]};}
+function stepParcAcesso(){return {t:"Acessos",i:"O que você precisa acessar para trabalhar sem depender de ninguém. A direção define a palavra final.",
+  render:()=>[
+    Q("O que você precisa acessar?",null,Matrix(PARC_ACC,[["n","Preciso"]],PRECISO_OPTS,k=>({n:(A.preciso||{})[k]}),(k,c,v)=>{A.preciso=A.preciso||{};A.preciso[k]=v;},{head:false})),
+    Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false,key:"device"}))]};}
+
+/* ---- Frentes e fluxos ---- */
+function frentesOpts(){return FRENTES.filter(([k])=>role()!=="direcao"||k!=="cursos"||(A.ativ||{}).cursos!=="Não fazemos");}
+function stepFrentes(){const dir=role()==="direcao";const opts=frentesOpts();return {t:dir?"Frentes de trabalho":"Frentes em que você atua",
+  i:dir?"Marque os tipos de cliente e de projeto que a Tabuleiro atende hoje. Cada frente marcada terá uma página própria, com perguntas próprias.":"Marque as frentes em que você trabalha.",
+  render:()=>[Q(dir?"Quais frentes existem hoje?":"Em quais frentes você atua?",null,Choices(opts.map(f=>f[1]),()=>(A.frentes||[]).map(k=>k.startsWith("x:")?k.slice(2):lab(FRENTES,k)),v=>{A.frentes=v.map(l=>{const f=FRENTES.find(x=>x[1]===l);return f?f[0]:"x:"+l;});},{descs:opts.map(f=>f[2]),key:"frentes"}))],
   valid:()=>(A.frentes||[]).length?"":"Marque pelo menos uma frente."};}
-
-function stepFluxo(fk){const dir=role()==="direcao";const name=lab(FRENTES,fk);const F=fr(fk);
-  return {t:"Fluxo: "+name,i:dir?"Descreva como um projeto desta frente anda, do primeiro contato ao fim. Marque as etapas na ordem em que acontecem e, para cada uma, quem faz, onde acontece e quanto tempo leva.":"Marque as etapas desta frente em que você participa e diga quem faz, onde acontece e quanto tempo leva.",
+function frenteName(k){return k.startsWith("x:")?k.slice(2):lab(FRENTES,k);}
+function stepFluxo(fk){const dir=role()==="direcao";const name=frenteName(fk);const F=fr(fk);const proj=PROJ_FRENTES.includes(fk)||fk.startsWith("x:");
+  return {t:"Fluxo: "+name,i:dir?(fk==="cursos"?"Como uma turma acontece, do planejamento ao certificado.":fk==="ingressos"?"Como um evento com ingressos acontece, do cadastro ao repasse.":"Como um projeto desta frente anda, do primeiro contato ao fim. A lista já esconde etapas de atividades que vocês não fazem, e o \"quem faz\" vem preenchido pela sua resposta anterior."):"Marque as etapas desta frente em que você participa. A lista mostra só as ligadas às suas atividades.",
   render:()=>{
     const trava=el("select",{id:nid("tv")});
-    const refresh=()=>{const opts=ETAPAS.concat((F.extras||[]).map(x=>["x:"+x,x])).filter(e=>(F.etapas||[]).some(s=>s.e===e[0])).map(e=>e[1]);
+    const refresh=()=>{const lst=stageList(fk).concat((F.extras||[]).map(x=>["x:"+x,x]));const opts=lst.filter(e=>(F.etapas||[]).some(s=>s.e===e[0])).map(e=>e[1]);
       trava.replaceChildren(el("option",{value:"",text:opts.length?"Selecione":"Marque as etapas acima primeiro"}),...opts.map(o=>el("option",{value:o,text:o})));trava.disabled=!opts.length;
       trava.value=opts.includes(F.travaLabel)?F.travaLabel:"";};
     trava.addEventListener("change",()=>{F.travaLabel=trava.value;save();});
-    const sb=StageBuilder(fk,{full:dir,onChange:refresh});refresh();
-    return dir?[
-    Q("Quantos projetos ou clientes desta frente por ano?",null,Choices(["Até 5","6 a 15","16 a 40","Mais de 40"],()=>F.volume,v=>F.volume=v,{multi:false})),
-    Q("Como esses clientes chegam?",null,Choices(ORIGEM,()=>F.origem,v=>F.origem=v)),
-    Q("Quais serviços vocês prestam nesta frente?",null,Choices(SERVICOS,()=>F.servicos,v=>F.servicos=v)),
-    Q("Como a cobrança é feita nesta frente?","Só o formato, sem valores.",Choices(COBRANCA,()=>F.cobranca,v=>F.cobranca=v)),
-    Q("Etapas do fluxo","Marque na ordem real. Se alguma etapa não estiver na lista, adicione no final.",sb),
-    Q("Quais documentos vocês pedem ao cliente nesta frente?","Viram um checklist automático em cada projeto.",Choices(DOCS_CLIENTE,()=>F.docs,v=>F.docs=v)),
-    Q("Em qual etapa esta frente mais trava?",null,trava),
-    Q("O que costuma travar nessa etapa?",null,Text(()=>F.travaObs,v=>F.travaObs=v,{area:true,ph:"Ex.: cliente demora a mandar certidões"}))
-  ]:[
-    Q("Etapas em que você participa",null,sb),
-    Q("Em qual dessas etapas o seu trabalho mais trava?",null,trava),
-    Q("O que mais atrasa o seu trabalho nesta frente?",null,Text(()=>F.travaObs,v=>F.travaObs=v,{area:true}))
-  ];}};}
+    const sb=StageBuilder(fk,{onChange:refresh});refresh();
+    if(!dir)return [Q("Etapas em que você participa",null,sb),Q("Em qual dessas etapas o seu trabalho mais trava?",null,trava),Q("O que mais atrasa o seu trabalho nesta frente?",null,Text(()=>F.travaObs,v=>F.travaObs=v,{area:true}))];
+    const out=[];
+    if(fk==="cursos"){out.push(
+      Q("Quantas turmas por ano?",null,Choices(["Até 3","4 a 10","Mais de 10"],()=>F.volume,v=>F.volume=v,{multi:false,key:"vol_cursos"})),
+      Q("Como são as turmas?",null,Choices(["Online","Presencial","Híbrido"],()=>F.modalidade,v=>F.modalidade=v,{key:"modalidade"})),
+      Q("Como os cursos são financiados?",null,Choices(["Pagos pelo aluno","Gratuitos, via edital ou lei","Patrocinados por empresa"],()=>F.financia,v=>F.financia=v,{key:"financia"})),
+      Q("Onde as inscrições são feitas?",null,Choices(["Site da Tabuleiro","Google Forms","Sympla","Hotmart","WhatsApp"],()=>F.inscOnde,v=>F.inscOnde=v,{key:"inscOnde"})),
+      Q("Como os certificados são emitidos?",null,Choices(["Feitos um a um (Canva, Word)","Gerados por plataforma","Não emitimos"],()=>F.cert,v=>F.cert=v,{multi:false,key:"cert"})));}
+    else if(fk==="ingressos"){out.push(
+      Q("Quantos eventos com ingressos por ano?",null,Choices(["Até 3","4 a 10","Mais de 10"],()=>F.volume,v=>F.volume=v,{multi:false,key:"vol_ingr"})),
+      Q("Onde os ingressos são vendidos?",null,Choices(["Sympla","Eventim","Bilheteria própria","Plataforma do espaço"],()=>F.plataforma,v=>F.plataforma=v,{key:"plataformaIngr"})),
+      Q("Há ingressos de cortesia como contrapartida a patrocinadores?",null,Choices(["Sim","Não","Às vezes"],()=>F.cortesia,v=>F.cortesia=v,{multi:false,key:"cortesia"})));}
+    else{const serv=(SERV_FRENTE[fk]||SERVICOS).filter(x=>anyAct(SERV_ACT[x]?[SERV_ACT[x]]:null));
+      out.push(
+      Q("Quantos projetos ou clientes desta frente por ano?",null,Choices(["Até 5","6 a 15","16 a 40","Mais de 40"],()=>F.volume,v=>F.volume=v,{multi:false,key:"vol_proj"})),
+      Q("Como esses clientes chegam?",null,Choices(ORIGEM,()=>F.origem,v=>F.origem=v,{key:"origem"})),
+      Q("Quais serviços vocês prestam nesta frente?",null,Choices(serv,()=>F.servicos,v=>F.servicos=v,{key:"serv_"+fk})));
+      if(anyAct(["escrita","inscricao","editais"]))out.push(Q("Com quais leis e editais esta frente trabalha?","Definem prazos, regras de comprovação e campos de cada projeto.",Choices(LEIS,()=>F.leis,v=>F.leis=v,{key:"leis"})));}
+    if(act("cobranca"))out.push(Q("Como a cobrança é feita nesta frente?","Só o formato, sem valores.",Choices(COBRANCA,()=>F.cobranca,v=>F.cobranca=v,{key:"cobranca"})));
+    out.push(Q("Etapas do fluxo","Marque na ordem real e confira quem faz cada uma.",sb));
+    if(proj&&anyAct(["contrato","inscricao","prestacao","escrita"]))out.push(Q("Quais documentos vocês pedem ao cliente nesta frente?","Viram um checklist automático em cada projeto.",Choices(fk==="artistas"?DOCS_PF:DOCS_PJ,()=>F.docs,v=>F.docs=v,{key:fk==="artistas"?"docsPF":"docsPJ"})));
+    out.push(Q("Em qual etapa esta frente mais trava?",null,trava),Q("O que costuma travar nessa etapa?",null,Text(()=>F.travaObs,v=>F.travaObs=v,{area:true,ph:"Ex.: cliente demora a mandar certidões"})));
+    return out;}};}
 
-function stepInfo(){const r=role();return {t:"Informações e avisos",i:"Mostra o que precisa ser fácil de encontrar e o que o sistema deve avisar sozinho.",
+/* ---- Informação e acesso (direção e equipe) ---- */
+function stepInfo(){return {t:"Informações e avisos",i:"Só aparecem as opções ligadas ao que "+(role()==="direcao"?"a Tabuleiro faz":"você faz")+".",
   render:()=>[
-    Q("O que você mais procura no dia a dia?","Marque até 5.",Choices(BUSCAR,()=>A.buscar,v=>A.buscar=v)),
-    r!=="parceiro"?Q("Onde cada controle fica hoje?",null,Matrix(CONTROLES,[["onde","Onde fica"]],CONTROLE_ONDE,k=>({onde:(A.controles||{})[k]}),(k,c,v)=>{A.controles=A.controles||{};A.controles[k]=v;},{head:false})):null,
-    Q("Sobre o que o sistema deve avisar você?",null,Choices(ALERTAS,()=>A.alertas,v=>A.alertas=v)),
-    Q("Onde você prefere receber os avisos?",null,Choices(CANAL,()=>A.canal,v=>A.canal=v,{two:false}))
-  ]};}
-
+    Q("O que você mais procura no dia a dia?","Marque até 5.",Choices(filt(BUSCAR,BUSCAR_ACT),()=>A.buscar,v=>A.buscar=v,{key:"buscar"})),
+    Q("Onde cada controle fica hoje?",null,Matrix(CONTROLES.filter(([k])=>anyAct(CONTROLE_ACT[k])&&(k!=="tarefas"||role()!=="direcao"||dirTeam()||dirPartner())),[["onde","Onde fica"]],CONTROLE_ONDE,k=>({onde:(A.controles||{})[k]}),(k,c,v)=>{A.controles=A.controles||{};A.controles[k]=v;},{head:false,key:"controles",addLabel:"Adicionar controle"})),
+    Q("Sobre o que o sistema deve avisar você?",null,Choices(filt(ALERTAS,ALERTA_ACT),()=>A.alertas,v=>A.alertas=v,{key:"alertas"})),
+    Q("Onde você prefere receber os avisos?",null,Choices(CANAL,()=>A.canal,v=>A.canal=v,{two:false,key:"canal"}))]};}
 function stepAcesso(){const r=role();
-  if(r==="direcao")return {t:"Acessos e permissões",i:"Defina o que cada perfil pode ver e editar. Esta é a base de segurança do sistema.",
+  if(r==="direcao"){const cols=[["equipe","Equipe interna"]];if(dirPartner()&&A.dirParcUsa!=="Não, a equipe repassa as informações")cols.push(["parceiro","Parceiro"]);cols.push(["cliente","Cliente"]);
+    return {t:"Acessos e permissões",i:"Defina o que cada perfil pode ver e editar. Esta é a base de segurança do sistema.",
     render:()=>[
-      Q("O que cada perfil pode acessar?","\"Só o que for dele(a)\" = apenas os projetos em que a pessoa está envolvida.",
-        Matrix(PERM_AREAS,[["equipe","Equipe interna"],["parceiro","Parceiro"],["cliente","Cliente"]],PERM_OPTS,k=>(A.perm||{})[k],(k,c,v)=>{A.perm=A.perm||{};A.perm[k]=Object.assign({},A.perm[k],{[c]:v});})),
-      Q("Onde você vai usar o sistema?",null,Choices(MOMENTO,()=>A.momento,v=>A.momento=v)),
-      Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false})),
-      Q("O que já existe e precisa entrar no sistema?",null,Choices(IMPORTAR,()=>A.importar,v=>A.importar=v)),
-      Q("Com quais ferramentas o sistema deveria conversar?",null,Choices(INTEGRA,()=>A.integra,v=>A.integra=v))
-    ]};
+      Q("O que cada perfil pode acessar?","\"Só o que for dele(a)\" = apenas os projetos em que a pessoa está envolvida."+(cols.some(c=>c[0]==="parceiro")?"":" A coluna Parceiro não aparece porque parceiros não vão usar o sistema."),
+        Matrix(PERM_AREAS,cols,PERM_OPTS,k=>(A.perm||{})[k],(k,c,v)=>{A.perm=A.perm||{};A.perm[k]=Object.assign({},A.perm[k],{[c]:v});})),
+      Q("Onde você vai usar o sistema?",null,Choices(MOMENTO,()=>A.momento,v=>A.momento=v,{key:"momento"})),
+      Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false,key:"device"})),
+      Q("O que já existe e precisa entrar no sistema?",null,Choices(IMPORTAR,()=>A.importar,v=>A.importar=v,{key:"importar"})),
+      Q("Com quais ferramentas o sistema deveria conversar?",null,Choices(INTEGRA,()=>A.integra,v=>A.integra=v,{key:"integra"}))]};}
+  const rows=PERM_AREAS.filter(([k])=>k!=="config"&&(k!=="contratos"||anyAct(["contrato","cobranca","proposta"]))&&(k!=="caixa"||anyAct(["cobranca","pagamentos"])));
   return {t:"Acessos",i:"Diga o que você precisa acessar para trabalhar sem depender de ninguém. A direção define a palavra final.",
     render:()=>[
-      Q("O que você precisa acessar?",null,Matrix(PERM_AREAS.filter(a=>a[0]!=="config"),[["n","Preciso"]],PRECISO_OPTS,k=>({n:(A.preciso||{})[k]}),(k,c,v)=>{A.preciso=A.preciso||{};A.preciso[k]=v;},{head:false})),
-      Q("Onde você vai usar o sistema?",null,Choices(MOMENTO,()=>A.momento,v=>A.momento=v)),
-      Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false}))
-    ]};}
+      Q("O que você precisa acessar?",null,Matrix(rows,[["n","Preciso"]],PRECISO_OPTS,k=>({n:(A.preciso||{})[k]}),(k,c,v)=>{A.preciso=A.preciso||{};A.preciso[k]=v;},{head:false})),
+      Q("Onde você vai usar o sistema?",null,Choices(MOMENTO,()=>A.momento,v=>A.momento=v,{key:"momento"})),
+      Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false,key:"device"}))]};}
 
 function stepFinal(){return {t:"Revisão e envio",i:"Confira o resumo. Você pode voltar a qualquer etapa antes de enviar.",
   render:()=>{const sm=el("dl",{class:"summary"});const row=(k,v)=>sm.append(el("div",{},el("dt",{text:k}),el("dd",{text:v||"Não respondido"})));
-    row("Nome",A.nome);row("Função",lab(ROLES,A.papel));row("Frentes",(A.frentes||[]).map(k=>lab(FRENTES,k)).join(", "));
-    (A.frentes||[]).forEach(k=>row("Etapas · "+lab(FRENTES,k),String(((A.fluxo||{})[k]||{}).etapas?.length||0)+" marcadas"));
+    row("Nome",A.nome);row("Função",lab(ROLES,A.papel));
+    if(A.papel==="parceiro")row("Especialidades",(A.parcTipo||[]).join(", "));
+    row("Frentes",(A.frentes||[]).map(frenteName).join(", "));
+    if(A.papel!=="parceiro")(A.frentes||[]).forEach(k=>row("Etapas · "+frenteName(k),String(((A.fluxo||{})[k]||{}).etapas?.length||0)+" marcadas"));
     return [sm,Q("Algo importante que não foi perguntado?",null,Text(()=>A.obs,v=>A.obs=v,{area:true}))];}};}
 
 function steps(){
-  const s=[stepIdent()];if(!A.papel)return s;
-  s.push(A.papel==="direcao"?stepPapelDirecao():A.papel==="equipe"?stepPapelEquipe():stepPapelParceiro());
-  s.push(stepFrentes());(A.frentes||[]).forEach(k=>s.push(stepFluxo(k)));
-  s.push(stepInfo());
-  s.push(stepAcesso());s.push(stepFinal());return s;}
+  const s=[stepIdent()];const r=A.papel;if(!r)return s;
+  if(r==="direcao"){s.push(stepPapelDirecao(),stepGestaoDirecao());if(detItems().length)s.push(stepDetalhes());s.push(stepFrentes());(A.frentes||[]).forEach(k=>s.push(stepFluxo(k)));s.push(stepInfo(),stepAcesso());}
+  else if(r==="equipe"){s.push(stepPapelEquipe());if(detItems().length)s.push(stepDetalhes());s.push(stepDependeEquipe(),stepFrentes());(A.frentes||[]).forEach(k=>s.push(stepFluxo(k)));s.push(stepInfo(),stepAcesso());}
+  else{s.push(stepParcAtuacao());(A.parcTipo||[]).forEach(sp=>s.push(stepParcEsp(sp)));s.push(stepFrentes(),stepParcCiclo(),stepParcInfo(),stepParcAcesso());}
+  s.push(stepFinal());return s;}
 
 /* ======== Envio ======== */
 function b64url(bytes){let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
 async function pack(obj){const json=JSON.stringify(obj);
   try{if(window.CompressionStream){const st=new Blob([json]).stream().pipeThrough(new CompressionStream("deflate-raw"));return "TABDATA:Z:"+b64url(new Uint8Array(await new Response(st).arrayBuffer()))+":FIM";}}catch(e){}
   return "TABDATA:J:"+b64url(new TextEncoder().encode(json))+":FIM";}
-function resumo(P){const L=[];const j=a=>(a||[]).join(", ");
-  L.push("Função: "+lab(ROLES,P.papel));L.push("Frentes: "+(P.frentes||[]).map(k=>lab(FRENTES,k)).join(", "));
-  if(P.ativ)L.push("Quem faz: "+ATIV.filter(([k])=>P.ativ[k]).map(([k,l])=>l+" = "+P.ativ[k]).join("; "));
-  if(P.minhas)L.push("Atividades: "+ATIV.filter(([k])=>P.minhas[k]&&P.minhas[k]!=="Não faço").map(([k,l])=>l+" ("+P.minhas[k]+")").join("; "));
+function resumo(P){const L=[];const j=a=>(a||[]).join(", ");const al=k=>k.startsWith("x:")?k.slice(2):lab(ATIV,k);
+  const stl=k=>k.startsWith("x:")?k.slice(2):lab(ETAPAS.concat(CURSO_ETAPAS,INGR_ETAPAS),k);
+  L.push("Função: "+lab(ROLES,P.papel));L.push("Frentes: "+(P.frentes||[]).map(frenteName).join(", "));
+  if(P.ativ)L.push("Quem faz: "+Object.entries(P.ativ).filter(([,v])=>v).map(([k,v])=>al(k)+" = "+v).join("; "));
+  if(P.papel==="equipe"&&P.minhas)L.push("Atividades: "+Object.entries(P.minhas).filter(([,v])=>v&&v!=="Não faço").map(([k,v])=>al(k)+" ("+v+")").join("; "));
+  if(P.papel==="parceiro"){L.push("Especialidades: "+j(P.parcTipo));Object.entries(P.esp||{}).forEach(([sp,E])=>L.push(sp+": faz "+j(E.faz)+(E.ins&&E.ins.length?" | precisa receber: "+j(E.ins):"")));
+    const C=P.ciclo||{};L.push("Ciclo: recebe de "+j(C.recebeDe)+" por "+j(C.canal)+"; aprova: "+j(C.aprova)+"; ajustes: "+(C.rodadas||"-")+"; entrega em "+j(C.entregaOnde)+"; recebe "+(C.pagQuando||"-"));}
   if(P.decisoes)L.push("Decisões da direção: "+j(P.decisoes));
-  (P.frentes||[]).forEach(k=>{const F=(P.fluxo||{})[k]||{};L.push("Fluxo "+lab(FRENTES,k)+": "+(F.etapas||[]).map(e=>{const n=e.e.startsWith("x:")?e.e.slice(2):lab(ETAPAS,e.e);return n+(e.quem?" ["+e.quem+"]":"");}).join(" > ")+(F.travaLabel?" | trava em: "+F.travaLabel:""));});
+  Object.entries(P.det||{}).forEach(([k,d])=>{const v=[].concat(d.v||[]).join(", ");if(v||d.v2)L.push(al(k)+": "+v+(d.v2?" | "+d.v2:""));});
+  (P.frentes||[]).forEach(k=>{const F=(P.fluxo||{})[k];if(!F)return;L.push("Fluxo "+frenteName(k)+": "+(F.etapas||[]).map(e=>stl(e.e)+(e.quem?" ["+e.quem+"]":"")).join(" > ")+(F.leis&&F.leis.length?" | leis: "+j(F.leis):"")+(F.travaLabel?" | trava em: "+F.travaLabel:""));});
   if(P.alertas)L.push("Avisos desejados: "+j(P.alertas));
   if(P.obs)L.push("Observações: "+P.obs);
   return L.join("\n");}
@@ -373,8 +554,10 @@ function render(){
   form.addEventListener("submit",async e=>{e.preventDefault();const m=st.valid&&st.valid();if(m){err.textContent=m;return;}
     if(!last){cur++;save();render();scrollTo({top:0});return;}
     next.disabled=true;back.disabled=true;next.textContent="Enviando...";err.textContent="";
-    const P=JSON.parse(JSON.stringify(A));P.v=2;P.enviadoEm=new Date().toISOString();
-    Object.keys(P.fluxo||{}).forEach(k=>{if(!(P.frentes||[]).includes(k))delete P.fluxo[k];});
+    const P=JSON.parse(JSON.stringify(A));P.v=3;P.enviadoEm=new Date().toISOString();
+    Object.keys(P.fluxo||{}).forEach(k=>{if(!(P.frentes||[]).includes(k)||P.papel==="parceiro")delete P.fluxo[k];});
+    if(P.papel==="parceiro"){P.minhas={};partnerActs().forEach(k=>P.minhas[k]="Por projeto");Object.keys(P.esp||{}).forEach(sp=>{if(!(P.parcTipo||[]).includes(sp))delete P.esp[sp];});}
+    if(P.det)Object.keys(P.det).forEach(k=>{if(!act(k))delete P.det[k];});
     try{await enviar(P);finished={payload:P};store.del("tab-map-draft");store.del("tab-map-step");render();scrollTo({top:0});}
     catch(x){next.disabled=false;back.disabled=false;next.textContent="Tentar enviar de novo";
       err.textContent="Não foi possível enviar agora. Verifique a internet e tente de novo; suas respostas estão salvas."+(x&&x.message?" (Detalhe: "+x.message+")":"");}});
