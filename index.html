@@ -140,7 +140,7 @@ textarea{min-height:96px;resize:vertical}
 <script>
 /* ======== CONFIGURAÇÃO ========
    endpoint: endereço que recebe as respostas e as entrega por e-mail (FormSubmit). */
-const CONFIG={endpoint:"https://formsubmit.co/ajax/josahcriativos@gmail.com"};
+const CONFIG={endpoint:"https://formsubmit.co/josahcriativos@gmail.com"};
 
 /* ======== Listas de referência (iguais às do painel) ======== */
 const ATIV=[["prospec","Prospecção e primeiro atendimento"],["proposta","Proposta e orçamento do serviço"],["contrato","Contrato e documentos do cliente"],["editais","Pesquisa de editais e leis"],["escrita","Escrita do projeto"],["orcproj","Planilha orçamentária do projeto"],["inscricao","Inscrição em plataformas (Salic, Prosas, mapas culturais)"],["diligencia","Respostas a diligências"],["captacao","Captação e negociação com patrocinadores"],["producao","Produção e execução"],["imprensa","Divulgação e assessoria de imprensa"],["design","Design e materiais gráficos"],["mentoria","Mentorias e consultorias"],["cursos","Cursos e formações"],["prestacao","Prestação de contas"],["cobranca","Cobrança e recebimentos"],["pagamentos","Pagamentos a parceiros e fornecedores"],["agenda","Agenda, reuniões e compromissos"],["coord","Coordenação da equipe e dos parceiros"]];
@@ -349,11 +349,13 @@ function resumo(P){const L=[];const j=a=>(a||[]).join(", ");
   if(P.obs)L.push("Observações: "+P.obs);
   return L.join("\n");}
 async function enviar(P){
-  const body={_subject:"Mapeamento Tabuleiro · "+(P.nome||"")+" ("+lab(ROLES,P.papel)+")",_template:"box",_captcha:"false",
+  const back=location.origin+location.pathname+"?enviado=1";
+  const fields={_subject:"Mapeamento Tabuleiro · "+(P.nome||"")+" ("+lab(ROLES,P.papel)+")",_template:"box",_captcha:"false",_next:back,
     "Nome":P.nome||"","Função":lab(ROLES,P.papel),"Resumo":resumo(P),"Dados para o painel":await pack(P)};
-  const r=await fetch(CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)});
-  let j={};try{j=await r.json();}catch(e){}
-  if(!r.ok||String(j.success)!=="true"){const err=new Error(j.message||("HTTP "+r.status));err.activation=/activat/i.test(j.message||"");throw err;}
+  store.set("tab-map-pending",{nome:P.nome||""});
+  const f=el("form",{method:"POST",action:CONFIG.endpoint,style:"display:none"});
+  Object.entries(fields).forEach(([k,v])=>{const t=document.createElement("textarea");t.name=k;t.value=v;f.append(t);});
+  document.body.append(f);f.submit();
 }
 
 /* ======== Render ======== */
@@ -375,9 +377,9 @@ function render(){
     next.disabled=true;back.disabled=true;next.textContent="Enviando...";err.textContent="";
     const P=JSON.parse(JSON.stringify(A));P.v=2;P.enviadoEm=new Date().toISOString();
     Object.keys(P.fluxo||{}).forEach(k=>{if(!(P.frentes||[]).includes(k))delete P.fluxo[k];});
-    try{await enviar(P);finished={payload:P};store.del("tab-map-draft");store.del("tab-map-step");render();scrollTo({top:0});}
+    try{await enviar(P);}
     catch(x){next.disabled=false;back.disabled=false;next.textContent="Tentar enviar de novo";
-      err.textContent=x.activation?"O formulário ainda está sendo ativado. Suas respostas estão salvas: tente de novo em alguns minutos.":"Não foi possível enviar agora. Verifique a internet e tente de novo; suas respostas estão salvas.";}});
+      err.textContent="Não foi possível enviar agora. Verifique a internet e tente de novo; suas respostas estão salvas.";}});
   form.append(err,el("div",{class:"actions"},back,next));
   app.append(form);
 }
@@ -387,6 +389,7 @@ function renderDone(app){
     el("p",{text:"Elas já chegaram para o Josah. Você pode fechar esta página."}),
     el("div",{},el("button",{class:"btn ghost small",type:"button",text:"Responder novamente (outra pessoa ou correção)",onclick:()=>{finished=null;A={};cur=0;render();}}))));
 }
+(function(){try{const q=new URLSearchParams(location.search);if(q.get("enviado")==="1"){const pend=store.get("tab-map-pending")||{};finished={payload:{nome:pend.nome||""}};store.del("tab-map-pending");store.del("tab-map-draft");store.del("tab-map-step");A={};cur=0;history.replaceState(null,"",location.pathname);}}catch(e){}})();
 render();
 </script>
 
