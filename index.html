@@ -139,8 +139,8 @@ textarea{min-height:96px;resize:vertical}
 
 <script>
 /* ======== CONFIGURAÇÃO ========
-   endpoint: endereço que recebe as respostas e as entrega por e-mail (FormSubmit). */
-const CONFIG={endpoint:"https://formsubmit.co/josahcriativos@gmail.com"};
+   Web3Forms recebe as respostas e entrega por e-mail. A chave pode ficar pública. */
+const CONFIG={endpoint:"https://api.web3forms.com/submit",key:"__WEB3FORMS_KEY__"};
 
 /* ======== Listas de referência (iguais às do painel) ======== */
 const ATIV=[["prospec","Prospecção e primeiro atendimento"],["proposta","Proposta e orçamento do serviço"],["contrato","Contrato e documentos do cliente"],["editais","Pesquisa de editais e leis"],["escrita","Escrita do projeto"],["orcproj","Planilha orçamentária do projeto"],["inscricao","Inscrição em plataformas (Salic, Prosas, mapas culturais)"],["diligencia","Respostas a diligências"],["captacao","Captação e negociação com patrocinadores"],["producao","Produção e execução"],["imprensa","Divulgação e assessoria de imprensa"],["design","Design e materiais gráficos"],["mentoria","Mentorias e consultorias"],["cursos","Cursos e formações"],["prestacao","Prestação de contas"],["cobranca","Cobrança e recebimentos"],["pagamentos","Pagamentos a parceiros e fornecedores"],["agenda","Agenda, reuniões e compromissos"],["coord","Coordenação da equipe e dos parceiros"]];
@@ -349,13 +349,11 @@ function resumo(P){const L=[];const j=a=>(a||[]).join(", ");
   if(P.obs)L.push("Observações: "+P.obs);
   return L.join("\n");}
 async function enviar(P){
-  const back=location.origin+location.pathname+"?enviado=1";
-  const fields={_subject:"Mapeamento Tabuleiro · "+(P.nome||"")+" ("+lab(ROLES,P.papel)+")",_template:"box",_captcha:"false",_next:back,
+  const body={access_key:CONFIG.key,subject:"Mapeamento Tabuleiro · "+(P.nome||"")+" ("+lab(ROLES,P.papel)+")",from_name:"Formulário Tabuleiro",
     "Nome":P.nome||"","Função":lab(ROLES,P.papel),"Resumo":resumo(P),"Dados para o painel":await pack(P)};
-  store.set("tab-map-pending",{nome:P.nome||""});
-  const f=el("form",{method:"POST",action:CONFIG.endpoint,style:"display:none"});
-  Object.entries(fields).forEach(([k,v])=>{const t=document.createElement("textarea");t.name=k;t.value=v;f.append(t);});
-  document.body.append(f);f.submit();
+  const r=await fetch(CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)});
+  let j={};try{j=await r.json();}catch(e){}
+  if(!r.ok||j.success===false)throw new Error(j.message||("HTTP "+r.status));
 }
 
 /* ======== Render ======== */
@@ -377,9 +375,9 @@ function render(){
     next.disabled=true;back.disabled=true;next.textContent="Enviando...";err.textContent="";
     const P=JSON.parse(JSON.stringify(A));P.v=2;P.enviadoEm=new Date().toISOString();
     Object.keys(P.fluxo||{}).forEach(k=>{if(!(P.frentes||[]).includes(k))delete P.fluxo[k];});
-    try{await enviar(P);}
+    try{await enviar(P);finished={payload:P};store.del("tab-map-draft");store.del("tab-map-step");render();scrollTo({top:0});}
     catch(x){next.disabled=false;back.disabled=false;next.textContent="Tentar enviar de novo";
-      err.textContent="Não foi possível enviar agora. Verifique a internet e tente de novo; suas respostas estão salvas.";}});
+      err.textContent="Não foi possível enviar agora. Verifique a internet e tente de novo; suas respostas estão salvas."+(x&&x.message?" (Detalhe: "+x.message+")":"");}});
   form.append(err,el("div",{class:"actions"},back,next));
   app.append(form);
 }
