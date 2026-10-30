@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+</head>
+<body>
+<title>Mapeamento Tabuleiro</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: coluna única de leitura, etapas que mudam conforme a função de quem responde. */
+:root{
+  --bg:#F3F4F1; --surface:#FFFFFF; --ink:#1C1F2B; --muted:#5E6372; --line:#D6D9D0; --line-strong:#B9BDB2;
+  --accent:#2B4C9B; --accent-soft:#E6ECF8; --casa:#D9A21B; --casa-soft:#FBF0D3; --crit:#B23A3A;
+  --f-display:"Familjen Grotesk","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace; --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#14161E; --surface:#1C1F2A; --ink:#E8E9EE; --muted:#A0A5B4; --line:#2E3240; --line-strong:#454A5C;
+  --accent:#8EA8EA; --accent-soft:#232D48; --casa:#E8B94A; --casa-soft:#3A3120; --crit:#E57D7D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#14161E; --surface:#1C1F2A; --ink:#E8E9EE; --muted:#A0A5B4; --line:#2E3240; --line-strong:#454A5C;
+  --accent:#8EA8EA; --accent-soft:#232D48; --casa:#E8B94A; --casa-soft:#3A3120; --crit:#E57D7D; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55}
+.wrap{max-width:760px;margin:0 auto;padding-block:0 72px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(28px,5vw,38px);font-weight:700}
+h2{font-size:24px;font-weight:600}
+h3{font-size:17px;font-weight:600}
+p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.eyebrow{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted)}
+.mast{padding-block:32px 22px;border-bottom:1px solid var(--line);margin-bottom:24px;display:grid;gap:10px}
+.mast p.lead{color:var(--muted);max-width:62ch}
+
+/* progresso */
+.prog{display:grid;gap:8px;margin-bottom:22px}
+.prog-bar{display:flex;gap:4px}
+.prog-bar span{flex:1;height:6px;border-radius:2px;background:var(--line)}
+.prog-bar span.done{background:var(--accent)}
+.prog-bar span.cur{background:var(--casa)}
+.prog-label{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+
+.step-title{display:grid;gap:6px;margin-bottom:6px}
+.intro{color:var(--muted);max-width:65ch;margin-bottom:8px}
+.q{display:grid;gap:10px;padding-block:20px;border-top:1px solid var(--line)}
+.q:first-of-type{border-top:0}
+.qt{font-weight:600;font-size:17px}
+.hint{font-size:14px;color:var(--muted);margin-top:-4px}
+input[type=text],textarea,select{width:100%;background:var(--surface);border:1px solid var(--line-strong);border-radius:6px;padding:10px 12px}
+select{padding:8px 10px;appearance:auto}
+textarea{min-height:96px;resize:vertical}
+
+/* opções com marcador visível */
+.choices{display:grid;gap:6px;grid-template-columns:1fr}
+@media (min-width:640px){.choices.two{grid-template-columns:1fr 1fr}}
+.choice{display:grid;grid-template-columns:20px minmax(0,1fr);gap:12px;align-items:start;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:10px 12px;cursor:pointer}
+.choice:hover{border-color:var(--line-strong)}
+.choice input{appearance:none;width:20px;height:20px;margin:1px 0 0;border:1.5px solid var(--line-strong);background:var(--surface);display:grid;place-items:center;cursor:pointer}
+.choice input[type=checkbox]{border-radius:4px}
+.choice input[type=radio]{border-radius:50%}
+.choice input:checked{background:var(--accent);border-color:var(--accent)}
+.choice input[type=checkbox]:checked::after{content:"";width:5px;height:10px;border:solid var(--surface);border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.choice input[type=radio]:checked::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--surface)}
+.choice:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.choice small{display:block;color:var(--muted);font-size:14px;line-height:1.4}
+
+/* cartões de função */
+.roles{display:grid;gap:10px;grid-template-columns:1fr}
+@media (min-width:640px){.roles{grid-template-columns:repeat(3,1fr)}}
+.role{display:grid;gap:8px;align-content:start;background:var(--surface);border:1.5px solid var(--line);border-radius:var(--r);padding:16px;cursor:pointer}
+.role input{position:absolute;opacity:0}
+.role:has(input:checked){border-color:var(--accent);box-shadow:inset 0 4px 0 var(--accent)}
+.role:has(input:focus-visible){outline:2px solid var(--accent);outline-offset:2px}
+.role strong{font-family:var(--f-display);font-size:18px}
+.role span{font-size:14px;color:var(--muted)}
+.role em{font-style:normal;font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+
+/* matriz */
+.matrix{display:grid;gap:0;border:1px solid var(--line);border-radius:6px;background:var(--surface);overflow:hidden}
+.mrow{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(var(--cols),minmax(0,1fr));gap:8px;align-items:center;padding:8px 12px;border-top:1px solid var(--line)}
+.mrow:first-child{border-top:0}
+.mhead{background:var(--bg);font-size:13px;color:var(--muted);font-weight:600}
+.mrow .lbl{font-size:15px}
+.mrow .cell label{display:none;font-size:12px;color:var(--muted)}
+@media (max-width:620px){
+  .mrow{grid-template-columns:1fr 1fr}
+  .mrow .lbl{grid-column:1/-1;font-weight:600}
+  .mhead{display:none}
+  .mrow .cell label{display:block}
+}
+
+/* construtor de etapas */
+.stages{display:grid;gap:6px}
+.stage{background:var(--surface);border:1px solid var(--line);border-radius:6px}
+.stage:has(> .choice input:checked){border-color:var(--accent)}
+.stage > .choice{border:0;background:transparent}
+.stage-detail{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding:0 12px 12px 44px}
+.stage-detail label{font-size:12px;color:var(--muted);display:grid;gap:2px}
+@media (max-width:560px){.stage-detail{grid-template-columns:1fr;padding-left:12px}}
+.addrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+
+.actions{display:flex;justify-content:space-between;gap:12px;margin-top:28px;flex-wrap:wrap}
+.btn{border:1px solid var(--ink);background:var(--ink);color:var(--bg);padding:11px 20px;border-radius:6px;cursor:pointer;font-weight:600}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line-strong)}
+.btn.small{padding:7px 12px;font-size:14px;font-weight:500}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.err{color:var(--crit);font-size:14px}
+.note{background:var(--casa-soft);border-radius:6px;padding:14px 16px;font-size:15px}
+.summary{display:grid;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:16px}
+.summary div{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:12px;font-size:15px}
+.summary dt{color:var(--muted)}
+.summary dd{margin:0}
+@media (max-width:520px){.summary div{grid-template-columns:1fr;gap:0}}
+.codebox{font-family:var(--f-mono);font-size:12px;word-break:break-all;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:12px;max-height:160px;overflow:auto;user-select:all}
+.done{display:grid;gap:16px}
+.steps-how{margin:0;padding-left:20px;display:grid;gap:6px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:6px;font-size:14px;z-index:20}
+.foot{margin-top:40px;font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <p class="eyebrow">Tabuleiro Produções · Sistema de gestão</p>
+    <h1>Mapeamento de funções e fluxos</h1>
+    <p class="lead">Este formulário complementa a reunião. Ele registra, com detalhe, quem faz o quê, como cada tipo de projeto anda dentro da Tabuleiro e quem precisa acessar cada informação. As perguntas mudam conforme a sua função.</p>
+  </header>
+  <main id="app"></main>
+  <p class="foot">Suas respostas ficam salvas neste navegador até o envio. Ao clicar em "Enviar respostas", elas vão direto para o Josah.</p>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ======== CONFIGURAÇÃO ========
+   endpoint: endereço que recebe as respostas e as entrega por e-mail (FormSubmit). */
+const CONFIG={endpoint:"https://formsubmit.co/ajax/josahcriativos@gmail.com"};
+
+/* ======== Listas de referência (iguais às do painel) ======== */
+const ATIV=[["prospec","Prospecção e primeiro atendimento"],["proposta","Proposta e orçamento do serviço"],["contrato","Contrato e documentos do cliente"],["editais","Pesquisa de editais e leis"],["escrita","Escrita do projeto"],["orcproj","Planilha orçamentária do projeto"],["inscricao","Inscrição em plataformas (Salic, Prosas, mapas culturais)"],["diligencia","Respostas a diligências"],["captacao","Captação e negociação com patrocinadores"],["producao","Produção e execução"],["imprensa","Divulgação e assessoria de imprensa"],["design","Design e materiais gráficos"],["mentoria","Mentorias e consultorias"],["cursos","Cursos e formações"],["prestacao","Prestação de contas"],["cobranca","Cobrança e recebimentos"],["pagamentos","Pagamentos a parceiros e fornecedores"],["agenda","Agenda, reuniões e compromissos"],["coord","Coordenação da equipe e dos parceiros"]];
+const FRENTES=[["artistas","Artistas","Pessoas físicas: projetos, agenciamento, mentoria, Kit Artista"],["empresas","Empresas patrocinadoras","Carteira de projetos, captação, incentivo fiscal"],["ongs","ONGs e coletivos","Projetos, convênios, captação"],["publico","Prefeituras e órgãos públicos","Projetos, consultorias, convênios"],["ensino","Escolas e instituições de ensino","Projetos educativos e socioeducativos"],["proprios","Projetos próprios da Tabuleiro","Projetos em que a Tabuleiro é a proponente"],["cursos","Cursos (CulturaOn)","Turmas, inscrições e certificados"],["ingressos","Central de Ingressos","Venda e controle de ingressos"]];
+const ETAPAS=[["contato","Primeiro contato e entendimento da demanda"],["proposta","Proposta e orçamento do serviço"],["contrato","Contrato assinado"],["docs","Coleta de documentos do cliente"],["edital","Escolha do edital ou lei de incentivo"],["escrita","Escrita do projeto"],["orcproj","Planilha orçamentária do projeto"],["inscricao","Inscrição na plataforma"],["diligencia","Diligências e ajustes"],["aprovacao","Aprovação e publicação"],["captacao","Captação de patrocínio"],["contrapartida","Negociação de contrapartidas"],["producao","Produção e execução"],["divulgacao","Divulgação e imprensa"],["prestacao","Prestação de contas"],["relacionamento","Relatório final e relacionamento"]];
+const QUEM=["Direção","Equipe","Direção e equipe","Parceiro","Cliente","Órgão / edital"];
+const ONDE=["WhatsApp","E-mail","Google Drive","Plataforma do edital","Planilha","Reunião ou telefone","Papel"];
+const DUR=["Horas","Dias","Semanas","Meses"];
+const QUEM_ATIV=["Eu","Equipe","Parceiro","Dividido","Não fazemos"];
+const FREQ=["Não faço","Raramente","Por projeto","Semanal","Diária"];
+const DECISOES=["Valor e condições da proposta","Se vale inscrever em um edital","Texto final do projeto antes da inscrição","Fechamento de contrato","Gastos e pagamentos","Contratação de parceiros","Prioridades da semana","Contrapartidas oferecidas a patrocinadores"];
+const PAINEL_VER=["Projetos por etapa","Prazos da semana","Quem está com cada tarefa","Recebimentos previstos","Cobranças em atraso","Captação em andamento por projeto","Carga de trabalho da equipe","Projetos aprovados no ano","Valor captado no ano"];
+const RECEBE=["WhatsApp","Conversa presencial","E-mail","Lista ou planilha de tarefas","Eu mesma decido o que fazer"];
+const REPORTA=["Aviso pelo WhatsApp","Conversa presencial","Atualizo uma planilha","Não costumo reportar, a direção pergunta"];
+const DEPENDE=["Dados e contatos do cliente","Documentos do cliente","Status de pagamento","Aprovação de texto ou valor","Prazos dos editais","Senhas e acessos de plataformas","Arquivos de projetos anteriores"];
+const PARC_TIPO=["Escrita de projetos","Produção executiva","Captação de recursos","Design","Assessoria de imprensa","Contabilidade","Audiovisual"];
+const PARC_REMUN=["Valor fixo por projeto","Percentual sobre aprovação ou captação","Por hora","Mensalidade","Varia conforme o projeto"];
+const ORIGEM=["Indicação","Instagram","WhatsApp","Site","Prospecção ativa","Edital que encontramos","Cliente recorrente"];
+const SERVICOS=["Elaboração de projeto","Captação de recursos","Agenciamento artístico","Mentoria","Kit Artista","Assessoria de imprensa","Consultoria (SWOT, ESG)","Produção executiva","Curso ou formação","Prestação de contas"];
+const COBRANCA=["Valor fixo por projeto","Mensalidade","Percentual sobre aprovação ou captação","Por hora","Pacote fechado"];
+const DOCS_CLIENTE=["RG e CPF","CNPJ e contrato social","Comprovante de endereço","Currículo ou portfólio","Release e fotos","Certidões negativas","Cartas de anuência","Orçamentos de fornecedores","Comprovantes de execução"];
+const BUSCAR=["Status de um projeto","Prazo de um edital ou diligência","Contato de cliente ou patrocinador","Documento de um cliente","Versão final de um projeto","Condições de um contrato","Se um pagamento foi feito","Quem é responsável por algo","Histórico de conversa com um cliente","Senha ou login de plataforma"];
+const CONTROLES=[["prazos","Prazos de editais e diligências"],["projetos","Projetos em andamento"],["contatos","Contatos de clientes e patrocinadores"],["financeiro","Cobranças e pagamentos"],["docs","Documentos dos projetos"],["tarefas","Tarefas da equipe"]];
+const CONTROLE_ONDE=["Planilha","Google Drive","Caderno","WhatsApp","Na memória","Não existe"];
+const ALERTAS=["Prazo de edital chegando","Diligência recebida","Prazo de diligência chegando","Documento pendente do cliente","Pagamento vencido ou a receber","Tarefa atrasada","Etapa parada há muito tempo","Prestação de contas chegando"];
+const CANAL=["Dentro do sistema","E-mail","WhatsApp"];
+const PERM_AREAS=[["projetos","Projetos e quadro de etapas"],["prazos","Prazos e editais"],["clientes","Clientes e contatos"],["docs","Documentos"],["contratos","Contratos e cobranças"],["caixa","Financeiro geral (entradas e saídas)"],["painel","Painel gerencial e relatórios"],["config","Usuários e configurações"]];
+const PERM_OPTS=["Sem acesso","Só o que for dele(a)","Só ver","Ver e editar"];
+const PRECISO_OPTS=["Não preciso","Só ver","Ver e editar"];
+const IMPORTAR=["Planilhas de controle","Lista de contatos","Histórico de projetos","Arquivos no Google Drive","Nada, começamos do zero"];
+const INTEGRA=["Google Agenda","Google Drive","WhatsApp","E-mail","Banco ou Pix","Emissor de nota fiscal","Instagram"];
+const MOMENTO=["No escritório ou em casa, no computador","Em reuniões externas","Durante eventos e produções","À noite ou fim de semana"];
+
+/* ======== Estado ======== */
+const $=s=>document.querySelector(s);
+const el=(t,a={},...c)=>{const e=document.createElement(t);for(const k in a){const v=a[k];if(v==null||v===false)continue;if(k==="class")e.className=v;else if(k==="text")e.textContent=v;else if(k.startsWith("on"))e.addEventListener(k.slice(2),v);else e.setAttribute(k,v===true?"":v);}c.flat().forEach(x=>x!=null&&x!==false&&e.append(x));return e;};
+const store={get(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}},del(k){try{localStorage.removeItem(k)}catch(e){}}};
+let A=store.get("tab-map-draft")||{};
+let cur=store.get("tab-map-step")||0;
+let finished=null;
+function save(){store.set("tab-map-draft",A);store.set("tab-map-step",cur);}
+function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toast._t);toast._t=setTimeout(()=>t.hidden=true,2600);}
+const lab=(list,k)=>(list.find(x=>x[0]===k)||[k,k])[1];
+const role=()=>A.papel;
+const fr=k=>{A.fluxo=A.fluxo||{};A.fluxo[k]=A.fluxo[k]||{};return A.fluxo[k];};
+
+/* ======== Componentes ======== */
+let uid=0;const nid=p=>p+"_"+(++uid);
+function Q(title,hint,...body){return el("div",{class:"q"},el("p",{class:"qt",text:title}),hint?el("p",{class:"hint",text:hint}):null,...body);}
+function Choices(opts,get,set,{multi=true,two=true,descs=null}={}){
+  const name=nid("c");const box=el("div",{class:"choices"+(two?" two":"")});
+  opts.forEach((o,i)=>{const id=name+"_"+i;const inp=el("input",{type:multi?"checkbox":"radio",name,id});
+    const v=get();inp.checked=multi?(v||[]).includes(o):v===o;
+    inp.addEventListener("change",()=>{if(multi){const s=new Set(get()||[]);inp.checked?s.add(o):s.delete(o);set(opts.filter(x=>s.has(x)));}else set(o);save();});
+    box.append(el("label",{class:"choice",for:id},inp,el("span",{},o,descs&&descs[i]?el("small",{text:descs[i]}):null)));});
+  return box;}
+function Text(get,set,{area=false,ph=""}={}){const id=nid("t");const e=area?el("textarea",{id,placeholder:ph}):el("input",{type:"text",id,placeholder:ph});e.value=get()||"";e.addEventListener("input",()=>{set(e.value);save();});return e;}
+function Sel(opts,get,set,{blank="Selecione",id=null}={}){const s=el("select",{id:id||nid("s")},el("option",{value:"",text:blank}),opts.map(o=>el("option",{value:o,text:o})));s.value=get()||"";s.addEventListener("change",()=>{set(s.value);save();});return s;}
+function Matrix(rows,cols,opts,getRow,setCell,{head=true}={}){
+  const m=el("div",{class:"matrix",style:`--cols:${cols.length}`});
+  if(head)m.append(el("div",{class:"mrow mhead"},el("span",{text:""}),cols.map(c=>el("span",{text:c[1]}))));
+  rows.forEach(r=>{const row=el("div",{class:"mrow"},el("span",{class:"lbl",text:r[1]}));
+    cols.forEach(c=>{const id=nid("m");row.append(el("div",{class:"cell"},el("label",{for:id,text:c[1]}),Sel(opts,()=>(getRow(r[0])||{})[c[0]],v=>setCell(r[0],c[0],v),{blank:"·",id})));});
+    m.append(row);});
+  return m;}
+
+/* Construtor de etapas por frente */
+function StageBuilder(fk,{full,onChange=()=>{}}){
+  const F=fr(fk);F.etapas=F.etapas||[];
+  const wrap=el("div",{class:"stages"});
+  const all=()=>ETAPAS.concat((F.extras||[]).map(x=>["x:"+x,x]));
+  function draw(){wrap.replaceChildren();
+    all().forEach(([k,l])=>{const st=F.etapas.find(e=>e.e===k);const id=nid("st");
+      const cb=el("input",{type:"checkbox",id});cb.checked=!!st;
+      cb.addEventListener("change",()=>{if(cb.checked)F.etapas.push({e:k});else F.etapas=F.etapas.filter(e=>e.e!==k);
+        F.etapas.sort((a,b)=>all().findIndex(x=>x[0]===a.e)-all().findIndex(x=>x[0]===b.e));save();draw();onChange();});
+      const box=el("div",{class:"stage"},el("label",{class:"choice",for:id},cb,el("span",{text:l})));
+      if(st){const det=el("div",{class:"stage-detail"});
+        const f=(t,opts,key)=>{const sid=nid("sd");return el("label",{for:sid},t,Sel(opts,()=>st[key],v=>{st[key]=v;},{id:sid,blank:"Selecione"}));};
+        det.append(f(full?"Quem faz":"Quem faz",QUEM,"quem"),f("Onde acontece",ONDE,"onde"),f("Quanto tempo leva",DUR,"dur"));
+        box.append(det);}
+      wrap.append(box);});
+  }
+  draw();
+  const inp=el("input",{type:"text",id:nid("ex"),placeholder:"Outra etapa que não está na lista"});
+  const add=el("button",{type:"button",class:"btn ghost small",text:"Adicionar etapa",onclick:()=>{const v=inp.value.trim();if(!v)return;F.extras=(F.extras||[]).concat(v);F.etapas.push({e:"x:"+v});inp.value="";save();draw();onChange();}});
+  return el("div",{style:"display:grid;gap:10px"},wrap,el("div",{class:"addrow"},inp,add));
+}
+
+/* ======== Etapas do formulário ======== */
+const ROLES=[["direcao","Direção","Dona ou sócia. Vê o negócio inteiro e toma as decisões.","20 a 30 min"],["equipe","Equipe interna","Funcionária ou colaboradora fixa da Tabuleiro.","10 a 15 min"],["parceiro","Parceiro externo","Profissional que atua em projetos específicos.","8 a 10 min"]];
+
+function stepIdent(){return {t:"Quem está respondendo",i:"Cada pessoa responde separadamente. As próximas perguntas mudam conforme a função escolhida.",
+  render:()=>{const roles=el("div",{class:"roles",role:"radiogroup","aria-label":"Função"});
+    ROLES.forEach(([k,t,d,time])=>{const id="role_"+k;const inp=el("input",{type:"radio",name:"papel",id});inp.checked=A.papel===k;
+      inp.addEventListener("change",()=>{A.papel=k;save();render();});
+      roles.append(el("label",{class:"role",for:id},inp,el("strong",{text:t}),el("span",{text:d}),el("em",{text:time})));});
+    return [Q("Seu nome",null,Text(()=>A.nome,v=>A.nome=v,{ph:"Nome e sobrenome"})),Q("Sua função na Tabuleiro",null,roles)];},
+  valid:()=>!A.nome?"Informe seu nome.":!A.papel?"Escolha sua função.":""};}
+
+function stepPapelDirecao(){return {t:"Seu papel e o da equipe",i:"Para cada atividade, diga quem faz hoje. Isso mostra onde o trabalho depende de você e o que pode ser distribuído pelo sistema.",
+  render:()=>[
+    Q("Quem faz cada atividade hoje?","\"Dividido\" = você e a equipe fazem juntas. Deixe em branco o que não souber.",
+      Matrix(ATIV,[["quem","Quem faz"]],QUEM_ATIV,k=>({quem:(A.ativ||{})[k]}),(k,c,v)=>{A.ativ=A.ativ||{};A.ativ[k]=v;},{head:false})),
+    Q("Quais decisões passam obrigatoriamente por você?","Viram etapas de aprovação dentro do sistema.",Choices(DECISOES,()=>A.decisoes,v=>A.decisoes=v)),
+    Q("O que você precisa enxergar para tocar a empresa?","Cada item marcado vira um bloco do painel gerencial.",Choices(PAINEL_VER,()=>A.painelVer,v=>A.painelVer=v)),
+    Q("Como você imagina a equipe daqui a 1 ano?",null,Choices(["Igual à de hoje","Mais 1 ou 2 pessoas fixas","Mais parceiros por projeto","Ainda não sei"],()=>A.crescimento,v=>A.crescimento=v,{multi:false}))
+  ]};}
+function stepPapelEquipe(){return {t:"O seu trabalho",i:"Marque com que frequência você faz cada atividade. É assim que o sistema vai montar a sua lista de tarefas.",
+  render:()=>[
+    Q("Com que frequência você faz cada atividade?","Deixe \"Não faço\" para o que não é com você.",
+      Matrix(ATIV,[["f","Frequência"]],FREQ,k=>({f:(A.minhas||{})[k]}),(k,c,v)=>{A.minhas=A.minhas||{};A.minhas[k]=v;},{head:false})),
+    Q("Como as tarefas chegam até você?",null,Choices(RECEBE,()=>A.recebe,v=>A.recebe=v)),
+    Q("Como você avisa que algo foi feito?",null,Choices(REPORTA,()=>A.reporta,v=>A.reporta=v)),
+    Q("O que você precisa pedir para a direção antes de conseguir trabalhar?","Cada item marcado é uma informação que o sistema deve deixar acessível para você.",Choices(DEPENDE,()=>A.depende,v=>A.depende=v)),
+    Q("Que tarefa repetitiva você gostaria que o sistema fizesse por você?",null,Text(()=>A.repetitiva,v=>A.repetitiva=v,{area:true,ph:"Ex.: montar a pasta de documentos de cada inscrição"}))
+  ]};}
+function stepPapelParceiro(){return {t:"Sua atuação com a Tabuleiro",i:"Ajuda a definir o que um parceiro enxerga e faz dentro do sistema.",
+  render:()=>[
+    Q("Em que você atua?",null,Choices(PARC_TIPO,()=>A.parcTipo,v=>A.parcTipo=v)),
+    Q("Com que frequência você faz cada atividade?",null,Matrix(ATIV,[["f","Frequência"]],FREQ,k=>({f:(A.minhas||{})[k]}),(k,c,v)=>{A.minhas=A.minhas||{};A.minhas[k]=v;},{head:false})),
+    Q("Como as demandas chegam até você?",null,Choices(RECEBE.slice(0,4),()=>A.recebe,v=>A.recebe=v)),
+    Q("Como é o seu modelo de remuneração?","Só o formato, sem valores.",Choices(PARC_REMUN,()=>A.parcRemun,v=>A.parcRemun=v,{multi:false})),
+    Q("O que você entrega ao final do seu trabalho?",null,Text(()=>A.entrega,v=>A.entrega=v,{area:true,ph:"Ex.: projeto escrito em PDF, planilha orçamentária"}))
+  ]};}
+
+function stepFrentes(){const dir=role()==="direcao";return {t:dir?"Frentes de trabalho":"Frentes em que você atua",
+  i:dir?"Marque os tipos de cliente e de projeto que a Tabuleiro atende hoje. Na sequência, cada frente marcada terá uma página própria para descrever o fluxo.":"Marque as frentes em que você trabalha. Cada uma terá uma página curta sobre as etapas em que você participa.",
+  render:()=>[Q(dir?"Quais frentes existem hoje?":"Em quais frentes você atua?",null,Choices(FRENTES.map(f=>f[1]),()=>(A.frentes||[]).map(k=>lab(FRENTES,k)),v=>{A.frentes=FRENTES.filter(f=>v.includes(f[1])).map(f=>f[0]);},{descs:FRENTES.map(f=>f[2])}))],
+  valid:()=>(A.frentes||[]).length?"":"Marque pelo menos uma frente."};}
+
+function stepFluxo(fk){const dir=role()==="direcao";const name=lab(FRENTES,fk);const F=fr(fk);
+  return {t:"Fluxo: "+name,i:dir?"Descreva como um projeto desta frente anda, do primeiro contato ao fim. Marque as etapas na ordem em que acontecem e, para cada uma, quem faz, onde acontece e quanto tempo leva.":"Marque as etapas desta frente em que você participa e diga quem faz, onde acontece e quanto tempo leva.",
+  render:()=>{
+    const trava=el("select",{id:nid("tv")});
+    const refresh=()=>{const opts=ETAPAS.concat((F.extras||[]).map(x=>["x:"+x,x])).filter(e=>(F.etapas||[]).some(s=>s.e===e[0])).map(e=>e[1]);
+      trava.replaceChildren(el("option",{value:"",text:opts.length?"Selecione":"Marque as etapas acima primeiro"}),...opts.map(o=>el("option",{value:o,text:o})));trava.disabled=!opts.length;
+      trava.value=opts.includes(F.travaLabel)?F.travaLabel:"";};
+    trava.addEventListener("change",()=>{F.travaLabel=trava.value;save();});
+    const sb=StageBuilder(fk,{full:dir,onChange:refresh});refresh();
+    return dir?[
+    Q("Quantos projetos ou clientes desta frente por ano?",null,Choices(["Até 5","6 a 15","16 a 40","Mais de 40"],()=>F.volume,v=>F.volume=v,{multi:false})),
+    Q("Como esses clientes chegam?",null,Choices(ORIGEM,()=>F.origem,v=>F.origem=v)),
+    Q("Quais serviços vocês prestam nesta frente?",null,Choices(SERVICOS,()=>F.servicos,v=>F.servicos=v)),
+    Q("Como a cobrança é feita nesta frente?","Só o formato, sem valores.",Choices(COBRANCA,()=>F.cobranca,v=>F.cobranca=v)),
+    Q("Etapas do fluxo","Marque na ordem real. Se alguma etapa não estiver na lista, adicione no final.",sb),
+    Q("Quais documentos vocês pedem ao cliente nesta frente?","Viram um checklist automático em cada projeto.",Choices(DOCS_CLIENTE,()=>F.docs,v=>F.docs=v)),
+    Q("Em qual etapa esta frente mais trava?",null,trava),
+    Q("O que costuma travar nessa etapa?",null,Text(()=>F.travaObs,v=>F.travaObs=v,{area:true,ph:"Ex.: cliente demora a mandar certidões"}))
+  ]:[
+    Q("Etapas em que você participa",null,sb),
+    Q("Em qual dessas etapas o seu trabalho mais trava?",null,trava),
+    Q("O que mais atrasa o seu trabalho nesta frente?",null,Text(()=>F.travaObs,v=>F.travaObs=v,{area:true}))
+  ];}};}
+
+function stepInfo(){const r=role();return {t:"Informações e avisos",i:"Mostra o que precisa ser fácil de encontrar e o que o sistema deve avisar sozinho.",
+  render:()=>[
+    Q("O que você mais procura no dia a dia?","Marque até 5.",Choices(BUSCAR,()=>A.buscar,v=>A.buscar=v)),
+    r!=="parceiro"?Q("Onde cada controle fica hoje?",null,Matrix(CONTROLES,[["onde","Onde fica"]],CONTROLE_ONDE,k=>({onde:(A.controles||{})[k]}),(k,c,v)=>{A.controles=A.controles||{};A.controles[k]=v;},{head:false})):null,
+    Q("Sobre o que o sistema deve avisar você?",null,Choices(ALERTAS,()=>A.alertas,v=>A.alertas=v)),
+    Q("Onde você prefere receber os avisos?",null,Choices(CANAL,()=>A.canal,v=>A.canal=v,{two:false}))
+  ]};}
+
+function stepAcesso(){const r=role();
+  if(r==="direcao")return {t:"Acessos e permissões",i:"Defina o que cada perfil pode ver e editar. Esta é a base de segurança do sistema.",
+    render:()=>[
+      Q("O que cada perfil pode acessar?","\"Só o que for dele(a)\" = apenas os projetos em que a pessoa está envolvida.",
+        Matrix(PERM_AREAS,[["equipe","Equipe interna"],["parceiro","Parceiro"],["cliente","Cliente"]],PERM_OPTS,k=>(A.perm||{})[k],(k,c,v)=>{A.perm=A.perm||{};A.perm[k]=Object.assign({},A.perm[k],{[c]:v});})),
+      Q("Onde você vai usar o sistema?",null,Choices(MOMENTO,()=>A.momento,v=>A.momento=v)),
+      Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false})),
+      Q("O que já existe e precisa entrar no sistema?",null,Choices(IMPORTAR,()=>A.importar,v=>A.importar=v)),
+      Q("Com quais ferramentas o sistema deveria conversar?",null,Choices(INTEGRA,()=>A.integra,v=>A.integra=v))
+    ]};
+  return {t:"Acessos",i:"Diga o que você precisa acessar para trabalhar sem depender de ninguém. A direção define a palavra final.",
+    render:()=>[
+      Q("O que você precisa acessar?",null,Matrix(PERM_AREAS.filter(a=>a[0]!=="config"),[["n","Preciso"]],PRECISO_OPTS,k=>({n:(A.preciso||{})[k]}),(k,c,v)=>{A.preciso=A.preciso||{};A.preciso[k]=v;},{head:false})),
+      Q("Onde você vai usar o sistema?",null,Choices(MOMENTO,()=>A.momento,v=>A.momento=v)),
+      Q("Em qual aparelho, principalmente?",null,Choices(["Computador","Celular","Os dois, igualmente"],()=>A.device,v=>A.device=v,{multi:false,two:false}))
+    ]};}
+
+function stepFinal(){return {t:"Revisão e envio",i:"Confira o resumo. Você pode voltar a qualquer etapa antes de enviar.",
+  render:()=>{const sm=el("dl",{class:"summary"});const row=(k,v)=>sm.append(el("div",{},el("dt",{text:k}),el("dd",{text:v||"Não respondido"})));
+    row("Nome",A.nome);row("Função",lab(ROLES,A.papel));row("Frentes",(A.frentes||[]).map(k=>lab(FRENTES,k)).join(", "));
+    (A.frentes||[]).forEach(k=>row("Etapas · "+lab(FRENTES,k),String(((A.fluxo||{})[k]||{}).etapas?.length||0)+" marcadas"));
+    return [sm,Q("Algo importante que não foi perguntado?",null,Text(()=>A.obs,v=>A.obs=v,{area:true}))];}};}
+
+function steps(){
+  const s=[stepIdent()];if(!A.papel)return s;
+  s.push(A.papel==="direcao"?stepPapelDirecao():A.papel==="equipe"?stepPapelEquipe():stepPapelParceiro());
+  s.push(stepFrentes());(A.frentes||[]).forEach(k=>s.push(stepFluxo(k)));
+  s.push(stepInfo());
+  s.push(stepAcesso());s.push(stepFinal());return s;}
+
+/* ======== Envio ======== */
+function b64url(bytes){let s="";for(let i=0;i<bytes.length;i+=0x8000)s+=String.fromCharCode.apply(null,bytes.subarray(i,i+0x8000));return btoa(s).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");}
+async function pack(obj){const json=JSON.stringify(obj);
+  try{if(window.CompressionStream){const st=new Blob([json]).stream().pipeThrough(new CompressionStream("deflate-raw"));return "TABDATA:Z:"+b64url(new Uint8Array(await new Response(st).arrayBuffer()))+":FIM";}}catch(e){}
+  return "TABDATA:J:"+b64url(new TextEncoder().encode(json))+":FIM";}
+function resumo(P){const L=[];const j=a=>(a||[]).join(", ");
+  L.push("Função: "+lab(ROLES,P.papel));L.push("Frentes: "+(P.frentes||[]).map(k=>lab(FRENTES,k)).join(", "));
+  if(P.ativ)L.push("Quem faz: "+ATIV.filter(([k])=>P.ativ[k]).map(([k,l])=>l+" = "+P.ativ[k]).join("; "));
+  if(P.minhas)L.push("Atividades: "+ATIV.filter(([k])=>P.minhas[k]&&P.minhas[k]!=="Não faço").map(([k,l])=>l+" ("+P.minhas[k]+")").join("; "));
+  if(P.decisoes)L.push("Decisões da direção: "+j(P.decisoes));
+  (P.frentes||[]).forEach(k=>{const F=(P.fluxo||{})[k]||{};L.push("Fluxo "+lab(FRENTES,k)+": "+(F.etapas||[]).map(e=>{const n=e.e.startsWith("x:")?e.e.slice(2):lab(ETAPAS,e.e);return n+(e.quem?" ["+e.quem+"]":"");}).join(" > ")+(F.travaLabel?" | trava em: "+F.travaLabel:""));});
+  if(P.alertas)L.push("Avisos desejados: "+j(P.alertas));
+  if(P.obs)L.push("Observações: "+P.obs);
+  return L.join("\n");}
+async function enviar(P){
+  const body={_subject:"Mapeamento Tabuleiro · "+(P.nome||"")+" ("+lab(ROLES,P.papel)+")",_template:"box",_captcha:"false",
+    "Nome":P.nome||"","Função":lab(ROLES,P.papel),"Resumo":resumo(P),"Dados para o painel":await pack(P)};
+  const r=await fetch(CONFIG.endpoint,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(body)});
+  let j={};try{j=await r.json();}catch(e){}
+  if(!r.ok||String(j.success)!=="true"){const err=new Error(j.message||("HTTP "+r.status));err.activation=/activat/i.test(j.message||"");throw err;}
+}
+
+/* ======== Render ======== */
+function render(){
+  const app=$("#app");app.replaceChildren();
+  if(finished){renderDone(app);return;}
+  const S=steps();if(cur>=S.length)cur=S.length-1;const st=S[cur];
+  const bar=el("div",{class:"prog-bar"});S.forEach((_,i)=>bar.append(el("span",{class:i<cur?"done":i===cur?"cur":""})));
+  app.append(el("div",{class:"prog"},bar,el("span",{class:"prog-label",text:`Etapa ${cur+1} de ${S.length}`+(A.papel?" · "+lab(ROLES,A.papel):"")})));
+  app.append(el("div",{class:"step-title"},el("h2",{text:st.t})),el("p",{class:"intro",text:st.i}));
+  const form=el("form",{novalidate:true});
+  [].concat(st.render()).forEach(x=>x&&form.append(x));
+  const err=el("p",{class:"err",role:"alert"});
+  const back=el("button",{type:"button",class:"btn ghost",text:"Voltar",disabled:cur===0,onclick:()=>{cur--;save();render();scrollTo({top:0});}});
+  const last=cur===S.length-1;
+  const next=el("button",{type:"submit",class:"btn",text:last?"Enviar respostas":"Continuar"});
+  form.addEventListener("submit",async e=>{e.preventDefault();const m=st.valid&&st.valid();if(m){err.textContent=m;return;}
+    if(!last){cur++;save();render();scrollTo({top:0});return;}
+    next.disabled=true;back.disabled=true;next.textContent="Enviando...";err.textContent="";
+    const P=JSON.parse(JSON.stringify(A));P.v=2;P.enviadoEm=new Date().toISOString();
+    Object.keys(P.fluxo||{}).forEach(k=>{if(!(P.frentes||[]).includes(k))delete P.fluxo[k];});
+    try{await enviar(P);finished={payload:P};store.del("tab-map-draft");store.del("tab-map-step");render();scrollTo({top:0});}
+    catch(x){next.disabled=false;back.disabled=false;next.textContent="Tentar enviar de novo";
+      err.textContent=x.activation?"O formulário ainda está sendo ativado. Suas respostas estão salvas: tente de novo em alguns minutos.":"Não foi possível enviar agora. Verifique a internet e tente de novo; suas respostas estão salvas.";}});
+  form.append(err,el("div",{class:"actions"},back,next));
+  app.append(form);
+}
+function renderDone(app){
+  app.append(el("div",{class:"done"},
+    el("h2",{text:"Respostas enviadas. Obrigado, "+(finished.payload.nome||"")+"."}),
+    el("p",{text:"Elas já chegaram para o Josah. Você pode fechar esta página."}),
+    el("div",{},el("button",{class:"btn ghost small",type:"button",text:"Responder novamente (outra pessoa ou correção)",onclick:()=>{finished=null;A={};cur=0;render();}}))));
+}
+render();
+</script>
+
+</body>
+</html>
